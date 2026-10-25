@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antigravity Retro Arcade</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+        body {
+            background: #080812;
+            color: #00ffcc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        #game-container {
+            position: relative;
+            box-shadow: 0 0 35px rgba(0, 255, 204, 0.35), 0 0 70px rgba(255, 0, 128, 0.2);
+            border: 2px solid #00ffcc;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #0d0d1a;
+        }
+        canvas {
+            display: block;
+        }
+        #ui {
+            position: absolute;
+            top: 15px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 18px;
+            font-weight: bold;
+            letter-spacing: 1.5px;
+            text-shadow: 0 0 8px #00ffcc;
+            pointer-events: none;
+        }
+        #overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(10, 10, 20, 0.88);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+        }
+        h1 {
+            font-size: 32px;
+            color: #ff007f;
+            text-shadow: 0 0 15px #ff007f, 0 0 30px #00ffcc;
+            margin-bottom: 10px;
+        }
+        p {
+            color: #a0aec0;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        button {
+            background: linear-gradient(135deg, #00ffcc, #ff007f);
+            color: #000;
+            font-weight: bold;
+            font-size: 18px;
+            padding: 12px 36px;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(0, 255, 204, 0.6);
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(255, 0, 128, 0.8);
+        }
+        .instructions {
+            margin-top: 15px;
+            font-size: 13px;
+            color: #718096;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="ui">
+        <div>SCORE: <span id="scoreVal">0</span></div>
+        <div>ENERGY: <span id="energyVal">100%</span></div>
+        <div>BEST: <span id="bestVal">0</span></div>
+    </div>
+    <canvas id="gameCanvas" width="600" height="700"></canvas>
+    
+    <div id="overlay">
+        <h1 id="titleText">⚡ ANTIGRAVITY RUNNER ⚡</h1>
+        <p id="descText">هدایت سفینه رو با کلیدهای چپ و راست (یا ماوس) دستت بگیر<br>گوی‌های درخشان آبی رو جذب کن و از صخره‌های فضایی دوری کن!</p>
+        <button id="startBtn">شروع بازی</button>
+        <div class="instructions">کلیدهای Arrow / A, D یا حرکت ماوس</div>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const scoreVal = document.getElementById('scoreVal');
+    const energyVal = document.getElementById('energyVal');
+    const bestVal = document.getElementById('bestVal');
+    const overlay = document.getElementById('overlay');
+    const startBtn = document.getElementById('startBtn');
+    const titleText = document.getElementById('titleText');
+    const descText = document.getElementById('descText');
+
+    let audioCtx = null;
+    function playBeep(freq, type = 'sine', duration = 0.1) {
+        try {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        } catch(e) {}
+    }
+
+    let highScore = localStorage.getItem('ag_highscore') || 0;
+    bestVal.innerText = highScore;
+
+    let gameState = 'START';
+    let score = 0;
+    let energy = 100;
+    let speed = 4;
+    let player = { x: 300, y: 620, size: 24, targetX: 300 };
+    let obstacles = [];
+    let crystals = [];
+    let particles = [];
+    let stars = [];
+
+    for (let i = 0; i < 50; i++) {
+        stars.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            size: Math.random() * 2 + 0.5,
+            speed: Math.random() * 2 + 1
+        });
+    }
+
+    let keys = {};
+    window.addEventListener('keydown', e => keys[e.code] = true);
+    window.addEventListener('keyup', e => keys[e.code] = false);
+
+    canvas.addEventListener('mousemove', e => {
+        const rect = canvas.getBoundingClientRect();
+        player.targetX = e.clientX - rect.left;
+    });
+
+    startBtn.addEventListener('click', () => {
+        overlay.style.display = 'none';
+        startGame();
+    });
+
+    function startGame() {
+        score = 0;
+        energy = 100;
+        speed = 4;
+        obstacles = [];
+        crystals = [];
+        particles = [];
+        player.x = 300;
+        player.targetX = 300;
+        gameState = 'PLAYING';
+        playBeep(600, 'square', 0.15);
+    }
+
+    function createExplosion(x, y, color, count = 15) {
+        for (let i = 0; i < count; i++) {
+            particles.push({
+                x, y,
+                vx: (Math.random() - 0.5) * 7,
+                vy: (Math.random() - 0.5) * 7,
+                size: Math.random() * 4 + 2,
+                color,
+                life: 1
+            });
+        }
+    }
+
+    let frame = 0;
+    function loop() {
+        requestAnimationFrame(loop);
+        frame++;
+
+        ctx.fillStyle = '#0a0a16';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Stars background
+        ctx.fillStyle = '#ffffff';
+        stars.forEach(star => {
+            star.y += star.speed * (gameState === 'PLAYING' ? (speed / 3) : 1);
+            if (star.y > canvas.height) {
+                star.y = 0;
+                star.x = Math.random() * canvas.width;
+            }
+            ctx.globalAlpha = star.size / 2.5;
+            ctx.beginPath();
+            ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+            ctx.fill();
+        });
+        ctx.globalAlpha = 1;
+
+        if (gameState === 'PLAYING') {
+            // Controls
+            if (keys['ArrowLeft'] || keys['KeyA']) player.targetX -= 8;
+            if (keys['ArrowRight'] || keys['KeyD']) player.targetX += 8;
+            
+            player.targetX = Math.max(player.size, Math.min(canvas.width - player.size, player.targetX));
+            player.x += (player.targetX - player.x) * 0.25;
+
+            // Speed up gradually
+            speed += 0.0015;
+
+            // Spawn obstacles
+            if (frame % Math.max(25, Math.floor(65 - speed * 3)) === 0) {
+                obstacles.push({
+                    x: Math.random() * (canvas.width - 60) + 30,
+                    y: -30,
+                    size: Math.random() * 20 + 20,
+                    speed: speed + Math.random() * 2
+                });
+            }
+
+            // Spawn crystals
+            if (frame % 70 === 0) {
+                crystals.push({
+                    x: Math.random() * (canvas.width - 40) + 20,
+                    y: -20,
+                    size: 14,
+                    speed: speed * 0.8
+                });
+            }
+
+            // Update obstacles
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                const obs = obstacles[i];
+                obs.y += obs.speed;
+
+                // Collision with player
+                const dist = Math.hypot(obs.x - player.x, obs.y - player.y);
+                if (dist < obs.size + player.size - 6) {
+                    energy -= 35;
+                    createExplosion(player.x, player.y, '#ff0055', 20);
+                    playBeep(180, 'sawtooth', 0.25);
+                    obstacles.splice(i, 1);
+                    if (energy <= 0) {
+                        gameOver();
+                    }
+                    continue;
+                }
+
+                if (obs.y > canvas.height + 40) {
+                    obstacles.splice(i, 1);
+                    score += 5;
+                }
+            }
+
+            // Update crystals
+            for (let i = crystals.length - 1; i >= 0; i--) {
+                const cry = crystals[i];
+                cry.y += cry.speed;
+
+                const dist = Math.hypot(cry.x - player.x, cry.y - player.y);
+                if (dist < cry.size + player.size) {
+                    score += 25;
+                    energy = Math.min(100, energy + 10);
+                    createExplosion(cry.x, cry.y, '#00ffff', 12);
+                    playBeep(880, 'sine', 0.12);
+                    crystals.splice(i, 1);
+                    continue;
+                }
+
+                if (cry.y > canvas.height + 30) {
+                    crystals.splice(i, 1);
+                }
+            }
+
+            scoreVal.innerText = score;
+            energyVal.innerText = Math.max(0, energy) + '%';
+        }
+
+        // Draw crystals
+        crystals.forEach(cry => {
+            ctx.save();
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = '#00ffff';
+            ctx.fillStyle = '#00ffff';
+            ctx.beginPath();
+            ctx.arc(cry.x, cry.y, cry.size, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        });
+
+        // Draw obstacles
+        obstacles.forEach(obs => {
+            ctx.save();
+            ctx.shadowBlur = 12;
+            ctx.shadowColor = '#ff3366';
+            ctx.fillStyle = '#ff2255';
+            ctx.beginPath();
+            ctx.arc(obs.x, obs.y, obs.size, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        });
+
+        // Draw Player
+        ctx.save();
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = '#00ffcc';
+        ctx.fillStyle = '#00ffcc';
+        ctx.beginPath();
+        ctx.moveTo(player.x, player.y - player.size);
+        ctx.lineTo(player.x - player.size, player.y + player.size);
+        ctx.lineTo(player.x, player.y + player.size * 0.5);
+        ctx.lineTo(player.x + player.size, player.y + player.size);
+        ctx.closePath();
+        ctx.fill();
+
+        // Thruster flame
+        if (gameState === 'PLAYING') {
+            ctx.fillStyle = '#ff00aa';
+            ctx.beginPath();
+            ctx.moveTo(player.x - 8, player.y + player.size * 0.7);
+            ctx.lineTo(player.x + 8, player.y + player.size * 0.7);
+            ctx.lineTo(player.x, player.y + player.size + Math.random() * 18);
+            ctx.closePath();
+            ctx.fill();
+        }
+        ctx.restore();
+
+        // Draw Particles
+        for (let i = particles.length - 1; i >= 0; i--) {
+            const p = particles[i];
+            p.x += p.vx;
+            p.y += p.vy;
+            p.life -= 0.03;
+            if (p.life <= 0) {
+                particles.splice(i, 1);
+                continue;
+            }
+            ctx.save();
+            ctx.globalAlpha = p.life;
+            ctx.fillStyle = p.color;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        }
+    }
+
+    function gameOver() {
+        gameState = 'GAMEOVER';
+        if (score > highScore) {
+            highScore = score;
+            localStorage.setItem('ag_highscore', highScore);
+            bestVal.innerText = highScore;
+        }
+        titleText.innerText = '💀 بازی تمام شد 💀';
+        descText.innerHTML = `امتیاز شما: <b style="color:#00ffcc; font-size:24px;">${score}</b><br>بهترین رکورد: ${highScore}`;
+        startBtn.innerText = 'دوباره بازی کن';
+        overlay.style.display = 'flex';
+        playBeep(120, 'sawtooth', 0.5);
+    }
+
+    loop();
+</script>
+</body>
+</html>

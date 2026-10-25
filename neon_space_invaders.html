@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon Space Invaders - Antigravity Edition</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+        body {
+            background: #05050b;
+            color: #00ffcc;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        #game-frame {
+            position: relative;
+            border: 2px solid #00ffcc;
+            border-radius: 8px;
+            box-shadow: 0 0 30px rgba(0, 255, 204, 0.4), inset 0 0 20px rgba(0, 255, 204, 0.2);
+            background: #080814;
+        }
+        canvas {
+            display: block;
+        }
+        #hud {
+            position: absolute;
+            top: 12px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 16px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-shadow: 0 0 8px #00ffcc;
+            pointer-events: none;
+        }
+        #modal {
+            position: absolute;
+            inset: 0;
+            background: rgba(5, 5, 12, 0.88);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        h1 {
+            font-size: 28px;
+            color: #ff007f;
+            text-shadow: 0 0 20px #ff007f;
+            margin-bottom: 12px;
+        }
+        p {
+            color: #a0aec0;
+            margin-bottom: 24px;
+            font-size: 14px;
+        }
+        button {
+            background: #00ffcc;
+            color: #05050b;
+            font-family: inherit;
+            font-weight: bold;
+            font-size: 16px;
+            padding: 10px 30px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            box-shadow: 0 0 20px #00ffcc;
+            transition: all 0.2s;
+        }
+        button:hover {
+            background: #ff007f;
+            color: #fff;
+            box-shadow: 0 0 25px #ff007f;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-frame">
+    <div id="hud">
+        <div>SCORE: <span id="scoreText">0</span></div>
+        <div>WAVE: <span id="waveText">1</span></div>
+        <div>LIVES: <span id="livesText">♥♥♥</span></div>
+    </div>
+    <canvas id="cv" width="600" height="650"></canvas>
+    
+    <div id="modal">
+        <h1 id="mTitle">👾 NEON INVADERS 👾</h1>
+        <p id="mDesc">SPACE = شلیک لیزر | حرکات = چپ و راست (Arrow Keys / A, D)</p>
+        <button id="mBtn">شروع ماموریت</button>
+    </div>
+</div>
+
+<script>
+    const cv = document.getElementById('cv');
+    const ctx = cv.getContext('2d');
+    const scoreText = document.getElementById('scoreText');
+    const waveText = document.getElementById('waveText');
+    const livesText = document.getElementById('livesText');
+    const modal = document.getElementById('modal');
+    const mTitle = document.getElementById('mTitle');
+    const mDesc = document.getElementById('mDesc');
+    const mBtn = document.getElementById('mBtn');
+
+    let audioCtx = null;
+    function beep(freq, type = 'square', dur = 0.08, vol = 0.05) {
+        try {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            g.gain.setValueAtTime(vol, audioCtx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
+            osc.connect(g);
+            g.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + dur);
+        } catch(e){}
+    }
+
+    let state = 'MENU';
+    let score = 0;
+    let wave = 1;
+    let lives = 3;
+
+    let player = { x: 300, y: 600, w: 32, h: 18, speed: 6 };
+    let bullets = [];
+    let enemyBullets = [];
+    let enemies = [];
+    let particles = [];
+    let enemyDir = 1;
+    let enemyStepDown = false;
+    let enemySpeed = 1;
+
+    let keys = {};
+    window.addEventListener('keydown', e => {
+        keys[e.code] = true;
+        if (e.code === 'Space' && state === 'PLAY') {
+            shootPlayer();
+        }
+    });
+    window.addEventListener('keyup', e => keys[e.code] = false);
+
+    mBtn.addEventListener('click', () => {
+        modal.style.display = 'none';
+        initGame();
+    });
+
+    function initGame() {
+        score = 0;
+        wave = 1;
+        lives = 3;
+        state = 'PLAY';
+        spawnWave();
+        updateHUD();
+    }
+
+    function spawnWave() {
+        enemies = [];
+        bullets = [];
+        enemyBullets = [];
+        enemySpeed = 0.8 + wave * 0.2;
+        const rows = 4;
+        const cols = 8;
+        const colors = ['#ff0055', '#ffaa00', '#00ffcc', '#bf00ff'];
+
+        for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+                enemies.push({
+                    x: 60 + c * 60,
+                    y: 70 + r * 45,
+                    w: 28,
+                    h: 22,
+                    color: colors[r],
+                    alive: true,
+                    pts: (4 - r) * 10
+                });
+            }
+        }
+    }
+
+    let lastShot = 0;
+    function shootPlayer() {
+        if (Date.now() - lastShot < 200) return;
+        lastShot = Date.now();
+        bullets.push({ x: player.x, y: player.y - 10, vy: -9, color: '#00ffcc' });
+        beep(750, 'square', 0.06, 0.04);
+    }
+
+    function createBurst(x, y, color) {
+        for (let i = 0; i < 15; i++) {
+            particles.push({
+                x, y,
+                vx: (Math.random() - 0.5) * 6,
+                vy: (Math.random() - 0.5) * 6,
+                life: 1,
+                color
+            });
+        }
+    }
+
+    function updateHUD() {
+        scoreText.innerText = score;
+        waveText.innerText = wave;
+        livesText.innerText = '♥'.repeat(Math.max(0, lives));
+    }
+
+    function loop() {
+        requestAnimationFrame(loop);
+        ctx.fillStyle = '#080814';
+        ctx.fillRect(0, 0, cv.width, cv.height);
+
+        if (state === 'PLAY') {
+            // Player move
+            if (keys['ArrowLeft'] || keys['KeyA']) player.x = Math.max(player.w, player.x - player.speed);
+            if (keys['ArrowRight'] || keys['KeyD']) player.x = Math.min(cv.width - player.w, player.x + player.speed);
+
+            // Bullets
+            for (let i = bullets.length - 1; i >= 0; i--) {
+                const b = bullets[i];
+                b.y += b.vy;
+                if (b.y < 0) {
+                    bullets.splice(i, 1);
+                    continue;
+                }
+
+                // Check hit enemy
+                for (let e of enemies) {
+                    if (e.alive && b.x > e.x - e.w/2 && b.x < e.x + e.w/2 && b.y > e.y - e.h/2 && b.y < e.y + e.h/2) {
+                        e.alive = false;
+                        score += e.pts;
+                        createBurst(e.x, e.y, e.color);
+                        beep(300, 'sawtooth', 0.12, 0.06);
+                        bullets.splice(i, 1);
+                        updateHUD();
+                        break;
+                    }
+                }
+            }
+
+            // Enemy march
+            let leftEdge = cv.width;
+            let rightEdge = 0;
+            let livingCount = 0;
+
+            enemies.forEach(e => {
+                if (e.alive) {
+                    livingCount++;
+                    if (e.x < leftEdge) leftEdge = e.x;
+                    if (e.x > rightEdge) rightEdge = e.x;
+                }
+            });
+
+            if (livingCount === 0) {
+                wave++;
+                beep(880, 'sine', 0.2);
+                spawnWave();
+                updateHUD();
+                return;
+            }
+
+            if (rightEdge >= cv.width - 30 && enemyDir > 0) {
+                enemyDir = -1;
+                enemyStepDown = true;
+            } else if (leftEdge <= 30 && enemyDir < 0) {
+                enemyDir = 1;
+                enemyStepDown = true;
+            }
+
+            enemies.forEach(e => {
+                if (e.alive) {
+                    e.x += enemyDir * (enemySpeed + (32 - livingCount) * 0.08);
+                    if (enemyStepDown) e.y += 15;
+
+                    // Enemy touches player level
+                    if (e.y >= player.y - 15) {
+                        gameOver();
+                    }
+
+                    // Random enemy shoot
+                    if (Math.random() < 0.0015) {
+                        enemyBullets.push({ x: e.x, y: e.y + 10, vy: 4, color: '#ff0055' });
+                    }
+                }
+            });
+            enemyStepDown = false;
+
+            // Enemy bullets
+            for (let i = enemyBullets.length - 1; i >= 0; i--) {
+                const eb = enemyBullets[i];
+                eb.y += eb.vy;
+                if (eb.y > cv.height) {
+                    enemyBullets.splice(i, 1);
+                    continue;
+                }
+
+                // Hit player
+                if (Math.hypot(eb.x - player.x, eb.y - player.y) < 20) {
+                    lives--;
+                    enemyBullets.splice(i, 1);
+                    createBurst(player.x, player.y, '#00ffcc');
+                    beep(150, 'sawtooth', 0.3, 0.08);
+                    updateHUD();
+                    if (lives <= 0) {
+                        gameOver();
+                    }
+                }
+            }
+        }
+
+        // Draw Player
+        ctx.save();
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = '#00ffcc';
+        ctx.fillStyle = '#00ffcc';
+        ctx.beginPath();
+        ctx.moveTo(player.x, player.y - player.h);
+        ctx.lineTo(player.x - player.w/2, player.y + player.h);
+        ctx.lineTo(player.x + player.w/2, player.y + player.h);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+
+        // Draw Bullets
+        bullets.forEach(b => {
+            ctx.fillStyle = b.color;
+            ctx.fillRect(b.x - 2, b.y - 8, 4, 16);
+        });
+
+        enemyBullets.forEach(eb => {
+            ctx.fillStyle = eb.color;
+            ctx.fillRect(eb.x - 2, eb.y, 4, 12);
+        });
+
+        // Draw Enemies
+        enemies.forEach(e => {
+            if (e.alive) {
+                ctx.save();
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = e.color;
+                ctx.fillStyle = e.color;
+                ctx.fillRect(e.x - e.w/2, e.y - e.h/2, e.w, e.h);
+                // Eyes
+                ctx.fillStyle = '#080814';
+                ctx.fillRect(e.x - 8, e.y - 4, 4, 6);
+                ctx.fillRect(e.x + 4, e.y - 4, 4, 6);
+                ctx.restore();
+            }
+        });
+
+        // Draw Particles
+        for (let i = particles.length - 1; i >= 0; i--) {
+            const p = particles[i];
+            p.x += p.vx;
+            p.y += p.vy;
+            p.life -= 0.04;
+            if (p.life <= 0) {
+                particles.splice(i, 1);
+                continue;
+            }
+            ctx.fillStyle = p.color;
+            ctx.globalAlpha = p.life;
+            ctx.fillRect(p.x, p.y, 3, 3);
+            ctx.globalAlpha = 1;
+        }
+    }
+
+    function gameOver() {
+        state = 'GAMEOVER';
+        mTitle.innerText = '💥 ماموریت شکست خورد 💥';
+        mDesc.innerHTML = `امتیاز نهایی: <b style="color:#00ffcc; font-size:20px;">${score}</b> | موج: ${wave}`;
+        mBtn.innerText = 'تلاش دوباره';
+        modal.style.display = 'flex';
+        beep(100, 'sawtooth', 0.5, 0.1);
+    }
+
+    loop();
+</script>
+</body>
+</html>

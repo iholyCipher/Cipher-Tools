@@ -1,0 +1,23 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Backups and archives
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# Environments and OS
+.env
+.venv
+env/
+venv/
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
