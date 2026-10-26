@@ -1,0 +1,7 @@
+# ⚡ Cipher Tools - Titan Suite
+# Designed with ZERO mandatory external pip dependencies!
+# All 150 tools run on pure standard library in Python 3.8+.
+
+# Optional enhancements (optional, not required):
+# colorama>=0.4.6; platform_system=="Windows"
+# psutil>=5.9.0

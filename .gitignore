@@ -18,6 +18,12 @@ venv/
 .DS_Store
 Thumbs.db
 
+# Test artifacts & scratchpad
+manifest.sha256
+*.sha256
+scratch_notes.txt
+wipe_block.tmp
+
 # IDE
 .vscode/
 .idea/

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Cipher Tools - Category 11 Part 2: National Network (Net Melli & Domestic Tools) [Tools 126 - 150]
-Engineered for: TheCIpher (Fingilish Output for Clean Windows Terminal Display)
+Architecture: Resilient Diagnostics & Network Telemetry (Fingilish Output for Clean Windows Terminal Display)
 """
 import os
 import sys
@@ -391,7 +391,7 @@ def tool_150_emergency_dashboard():
     print(f"\n {CLR_BOLD}{CLR_YELLOW}=== [150] Master Dashboard & Survival Guide Net Melli ==={CLR_RESET}")
     print(f"""
   {CLR_BOLD}{CLR_PINK}===================================================================={CLR_RESET}
-  {CLR_BOLD}{CLR_CYAN}       THECIPHER EMERGENCY NET MELLI SURVIVAL TOOLKIT (50/50){CLR_RESET}
+  {CLR_BOLD}{CLR_CYAN}       CIPHER TOOLS EMERGENCY NET MELLI SURVIVAL TOOLKIT (50/50){CLR_RESET}
   {CLR_BOLD}{CLR_PINK}===================================================================={CLR_RESET}
   1. Hameye 50 abzar Category 11 fa'al va amadeh be khedmat hastand.
   2. Dar sorate ghat'ie internet:

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Cipher Tools - Category 11 Part 1: National Network (Net Melli & Domestic Tools) [Tools 101 - 125]
-Engineered for: TheCIpher (Fingilish Output for Clean Windows Terminal Display)
+Architecture: Resilient Diagnostics & Network Telemetry (Fingilish Output for Clean Windows Terminal Display)
 Includes Massive DNS Benchmark (25+ DNS) & Massive VPN Port Scanner (45+ Ports)
 """
 import os

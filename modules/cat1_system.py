@@ -5,9 +5,10 @@ Cipher Tools - Category 1: System, OS & Kernel (Tools 1 - 10)
 import os
 import sys
 import time
+import getpass
 import platform
 import subprocess
-from datetime import datetime
+from datetime import datetime, timezone
 
 CLR_CYAN = "\033[96m"
 CLR_GREEN = "\033[92m"
@@ -95,7 +96,8 @@ def tool_6_power_scheme():
 
 def tool_7_active_sessions():
     print(f"\n {CLR_BOLD}{CLR_YELLOW}=== [7] Active Logged-in Sessions & Users ==={CLR_RESET}")
-    print(f"  {CLR_GREEN}Current Operator User:{CLR_RESET} {os.getenv('USERNAME') or 'TheCIpher'}")
+    curr_user = os.getenv('USERNAME') or os.getenv('USER') or getpass.getuser() or "Operator"
+    print(f"  {CLR_GREEN}Current Operator User:{CLR_RESET} {curr_user}")
     if os.name == 'nt':
         try:
             out = subprocess.check_output(["query", "user"], text=True)
@@ -118,7 +120,7 @@ def tool_8_bios_motherboard():
 def tool_9_locale_timezone():
     print(f"\n {CLR_BOLD}{CLR_YELLOW}=== [9] System Locale, Codepage & Timezone ==={CLR_RESET}")
     print(f"  {CLR_GREEN}● Local Timestamp:{CLR_RESET}   {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    print(f"  {CLR_GREEN}● UTC Timestamp  :{CLR_RESET}   {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"  {CLR_GREEN}● UTC Timestamp  :{CLR_RESET}   {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}")
     print(f"  {CLR_GREEN}● Default Encoding:{CLR_RESET}  {sys.getdefaultencoding()}")
     print(f"  {CLR_GREEN}● Filesystem Code:{CLR_RESET}   {sys.getfilesystemencoding()}")
     if hasattr(time, 'tzname'):
