@@ -83,6 +83,14 @@ SAFE_MOCKS = {
     # Cat 11
     146: [""],  # sublink fetcher empty
     149: ["n"],  # tcp optimizer decline
+    # Cat 12
+    168: ["1", "-3", "2"],  # quadratic solver (x^2 - 3x + 2 = 0)
+    170: ["1,2,3", "4,5,6"],  # 3D vectors
+    191: ["10000", "5", "12"],  # amortization (10k, 5%, 12 mos)
+    192: ["1000", "5", "2"],  # compound interest (1k, 5%, 2 yrs)
+    # Cat 13
+    208: ["password123", "salt123", "1000"],  # pbkdf2
+    212: ["CIPHERTEST", "3"],  # rail fence
 }
 
 def run_all_tests(start_id=1, end_id=None):

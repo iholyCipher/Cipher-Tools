@@ -18,7 +18,7 @@ import argparse
 import getpass
 import platform
 
-__version__ = "5.0.0"
+__version__ = "1.0.0"
 __author__ = "Cipher Engineering"
 __license__ = "MIT"
 
