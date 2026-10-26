@@ -2,13 +2,14 @@
 # -*- coding: utf-8 -*-
 """
 Cipher Tools - Titan Suite Automated Test & Quality Assurance Engine
-Runs and validates all 150 tools one by one with safe mocked inputs.
+Runs and validates all 625 tools one by one with safe mocked inputs.
 """
 
 import os
 import sys
 import time
 import io
+import argparse
 from unittest.mock import patch
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -70,33 +71,38 @@ SAFE_MOCKS = {
     80: ["README.md"],  # mime
     # Cat 10
     91: [""],  # epoch current
-    92: ['{"status": "ok", "tools": 150}'],  # json
+    92: ['{"status": "ok", "tools": 625}'],  # json
     93: ["<p>Hello <b>World</b></p>"],  # xml
     94: ["24"],  # cidr
     95: ["255"],  # base
-    96: ["Cipher Tools Titan Suite provides 150 tools."],  # words
+    96: ["Cipher Tools Titan Suite provides 625 tools."],  # words
     97: ["Hello world cipher tools"],  # case
     98: ["# Header\n**Bold** and *italic* text"],  # md
-    99: [r"\d+", "Found 150 tools in 2026."],  # regex
+    99: [r"\d+", "Found 625 tools in 2026."],  # regex
     100: ["1"],  # scratchpad view
     # Cat 11
     146: [""],  # sublink fetcher empty
     149: ["n"],  # tcp optimizer decline
 }
 
-def run_all_tests():
-    total = len(TOOLS)
+def run_all_tests(start_id=1, end_id=None):
+    if end_id is None:
+        end_id = len(TOOLS)
+        
+    start_id = max(1, start_id)
+    end_id = min(len(TOOLS), end_id)
+    total = (end_id - start_id) + 1
     passed = 0
     failed = 0
     errors = []
 
-    print(f"\n====================================================================")
-    print(f"🚀 CIPHER TOOLS - EXHAUSTIVE 150-TOOL QUALITY ASSURANCE SUITE")
-    print(f"====================================================================\n")
+    print(f"\n====================================================================", flush=True)
+    print(f"🚀 CIPHER TOOLS - EXHAUSTIVE QUALITY ASSURANCE SUITE (Tools {start_id} to {end_id})", flush=True)
+    print(f"====================================================================\n", flush=True)
 
     start_time = time.time()
 
-    for tid in range(1, total + 1):
+    for tid in range(start_id, end_id + 1):
         name, func, cat = TOOLS[tid]
         mock_inputs = iter(SAFE_MOCKS.get(tid, ["\n", "", "1", "no", "n", "."]))
         
@@ -110,32 +116,37 @@ def run_all_tests():
                     func()
             elapsed = time.time() - t0
             passed += 1
-            print(f"  [✓] Tool {tid:03d} PASSED ({elapsed:.3f}s) | {cat:<10} | {name}")
+            print(f"  [✓] Tool {tid:03d} PASSED ({elapsed:.3f}s) | {cat:<10} | {name}", flush=True)
         except Exception as e:
             elapsed = time.time() - t0
             failed += 1
             err_msg = str(e)
             errors.append((tid, name, cat, err_msg))
-            print(f"  [✗] Tool {tid:03d} FAILED ({elapsed:.3f}s) | {cat:<10} | {name}: {err_msg}")
+            print(f"  [✗] Tool {tid:03d} FAILED ({elapsed:.3f}s) | {cat:<10} | {name}: {err_msg}", flush=True)
 
     total_time = time.time() - start_time
-    print(f"\n====================================================================")
-    print(f"TEST RESULTS SUMMARY:")
-    print(f"  Total Tools Tested : {total}")
-    print(f"  Passed             : {passed} ({(passed/total)*100:.1f}%)")
-    print(f"  Failed             : {failed}")
-    print(f"  Total Time         : {total_time:.2f} seconds")
-    print(f"====================================================================")
+    print(f"\n====================================================================", flush=True)
+    print(f"TEST RESULTS SUMMARY:", flush=True)
+    print(f"  Total Tools Tested : {total}", flush=True)
+    print(f"  Passed             : {passed} ({(passed/total)*100:.1f}%)", flush=True)
+    print(f"  Failed             : {failed}", flush=True)
+    print(f"  Total Time         : {total_time:.2f} seconds", flush=True)
+    print(f"====================================================================", flush=True)
 
     if errors:
-        print("\nFailures to debug:")
+        print("\nFailures to debug:", flush=True)
         for tid, name, cat, err in errors:
-            print(f"  - Tool #{tid} ({name}): {err}")
+            print(f"  - Tool #{tid} ({name}): {err}", flush=True)
         return False
     else:
-        print("\n🌟 ALL 150 TOOLS PASSED WITH 100% SUCCESS RATE! 🌟\n")
+        print(f"\n🌟 ALL {total} TOOLS PASSED WITH 100% SUCCESS RATE! 🌟\n", flush=True)
         return True
 
 if __name__ == "__main__":
-    success = run_all_tests()
+    parser = argparse.ArgumentParser(description="Cipher Tools QA Engine")
+    parser.add_argument("--start", type=int, default=1, help="Start tool ID")
+    parser.add_argument("--end", type=int, default=None, help="End tool ID")
+    args = parser.parse_args()
+
+    success = run_all_tests(start_id=args.start, end_id=args.end)
     sys.exit(0 if success else 1)

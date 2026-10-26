@@ -4,11 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cipher-tools"
-version = "3.5.0"
+version = "4.0.0"
 authors = [
   { name="Cipher Engineering", email="security@ciphertools.org" },
 ]
-description = "⚡ Cipher Tools - Titan Suite: 150 Precision Cybersecurity, Forensics, Networking & System Engineering Tools"
+description = "⚡ Cipher Tools - Titan Suite: 625 Precision Cybersecurity, Forensics, Networking & System Engineering Tools"
 readme = "README.md"
 requires-python = ">=3.8"
 license = { text = "MIT" }
@@ -33,7 +33,7 @@ classifiers = [
 ]
 keywords = [
     "cybersecurity", "forensics", "networking", "windows-tools",
-    "pentest", "net-melli", "sysinternals", "dns-benchmark", "toolkit"
+    "pentest", "net-melli", "sysinternals", "dns-benchmark", "toolkit", "threat-intel"
 ]
 
 [project.scripts]

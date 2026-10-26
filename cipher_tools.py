@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 """
 ========================================================================================
-                      ⚡ CIPHER TOOLS - TITAN SUITE (150 TOOLS) ⚡
+                      ⚡ CIPHER TOOLS - TITAN SUITE (625 TOOLS) ⚡
 ========================================================================================
 Architecture: Modular Enterprise Cybersecurity, Forensics, Networking & System Engineering
 Platform: Cross-Platform Ready (Windows x64 / Linux / macOS)
 Design: Zero Mandatory Pip Dependencies (Pure Python 3.8+ Standard Library)
-Categories: 11 Comprehensive Disciplines x 150 Precision Tools
+Disciplines: 21 Comprehensive Engineering Disciplines x 625 Precision Power Tools
 ========================================================================================
 """
 
@@ -18,7 +18,7 @@ import argparse
 import getpass
 import platform
 
-__version__ = "3.5.0"
+__version__ = "4.0.0"
 __author__ = "Cipher Engineering"
 __license__ = "MIT"
 
@@ -35,17 +35,7 @@ MODULES_DIR = os.path.join(BASE_DIR, "modules")
 if MODULES_DIR not in sys.path:
     sys.path.insert(0, MODULES_DIR)
 
-from cat1_system import *
-from cat2_cpu_mem import *
-from cat3_storage import *
-from cat4_network import *
-from cat5_web import *
-from cat6_crypto import *
-from cat7_security import *
-from cat8_forensics import *
-from cat9_windows import *
-from cat10_dev import *
-from cat11_natnet import *
+from registry import TOOLS, CATEGORIES
 
 # Color Palette (Graceful fallback if NO_COLOR is set or non-tty)
 NO_COLOR = bool(os.getenv("NO_COLOR") or not sys.stdout.isatty())
@@ -70,197 +60,8 @@ BANNER = rf"""{CLR_CYAN}
  ██║     ██║██╔═══╝ ██╔══██║██╔══╝  ██╔══██╗       ██║   ██║   ██║██║   ██║██║     ╚════██║
  ╚██████╗██║██║     ██║  ██║███████╗██║  ██║       ██║   ╚██████╔╝╚██████╔╝███████╗███████║
   ╚═════╝╚═╝╚═╝     ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝       ╚═╝    ╚═════╝  ╚═════╝ ╚══════╝╚══════╝
-{CLR_PINK}         >>> CIPHER TOOLS: TITAN SUITE v{__version__} (150 PRECISION POWER TOOLS) <<<{CLR_RESET}
+{CLR_PINK}         >>> CIPHER TOOLS: TITAN SUITE v{__version__} (625 PRECISION POWER TOOLS) <<<{CLR_RESET}
 """
-
-# Master Registry of all 150 Tools: {ID: (Name, Function, Category_Tag, Description)}
-TOOLS = {
-    # Category 1: System, OS & Kernel
-    1: ("OS Architecture & Kernel Build Info", tool_1_os_arch, "System"),
-    2: ("Windows Uptime & Boot Time Tracker", tool_2_uptime, "System"),
-    3: ("Installed Hotfixes & OS Updates", tool_3_hotfixes, "System"),
-    4: ("Environment Variables Explorer", tool_4_env_vars, "System"),
-    5: ("System PATH Validator & Missing Path Detector", tool_5_path_validator, "System"),
-    6: ("Windows Power Scheme & Battery Status", tool_6_power_scheme, "System"),
-    7: ("Active Logged-in Sessions & Users", tool_7_active_sessions, "System"),
-    8: ("BIOS / Motherboard Serial & Manufacturer", tool_8_bios_motherboard, "System"),
-    9: ("System Locale, Codepage & Timezone", tool_9_locale_timezone, "System"),
-    10: ("Windows Shutdown / Reboot Timer", tool_10_shutdown_timer, "System"),
-
-    # Category 2: CPU, Memory & Hardware Benchmarks
-    11: ("Multi-Threaded Floating-Point Benchmark (FLOPs)", tool_11_flpop_benchmark, "Hardware"),
-    12: ("Single-Thread Integer Math Stress Test", tool_12_int_stress, "Hardware"),
-    13: ("RAM Memory Architecture & Capacity", tool_13_ram_capacity, "Hardware"),
-    14: ("Real-time CPU Usage Meter (Polled)", tool_14_cpu_usage, "Hardware"),
-    15: ("Process Affinity & CPU Core Count Matrix", tool_15_cpu_affinity, "Hardware"),
-    16: ("Memory Bandwidth Throughput Test (RAM Speed)", tool_16_ram_throughput, "Hardware"),
-    17: ("Top 15 Memory-Consuming Processes", tool_17_top_memory_proc, "Hardware"),
-    18: ("Process Killer by PID or Process Name", tool_18_kill_proc, "Hardware"),
-    19: ("Process Hierarchy & Parent ID", tool_19_proc_tree, "Hardware"),
-    20: ("Real-time System Heartbeat Pulse", tool_20_heartbeat_pulse, "Hardware"),
-
-    # Category 3: Storage, Disk & File System Forensics
-    21: ("Partition Capacity & Percentage Bar Graph", tool_21_partition_graph, "Storage"),
-    22: ("SHA-256 Duplicate File Finder", tool_22_duplicate_finder, "Storage"),
-    23: ("Recursive Directory Space Consumption Tree", tool_23_folder_tree, "Storage"),
-    24: ("Ghost Folder Pruner (Empty Directory Eraser)", tool_24_empty_pruner, "Storage"),
-    25: ("Smart Archive Search, Auto-Extract & Explorer Launch", tool_25_archive_extractor, "Storage"),
-    26: ("Batch File Extension Renamer", tool_26_batch_rename, "Storage"),
-    27: ("Checksum Manifest Creator (.sha256)", tool_27_create_checksum, "Storage"),
-    28: ("Checksum Manifest Verifier", tool_28_verify_checksum, "Storage"),
-    29: ("Zero-Byte / Corrupted File Finder", tool_29_zero_byte_finder, "Storage"),
-    30: ("Largest Files Finder in Target Directory", tool_30_largest_files, "Storage"),
-
-    # Category 4: Network Reconnaissance & Diagnostics
-    31: ("Local Subnet ARP & Active Host Sweep", tool_31_arp_sweep, "Network"),
-    32: ("TCP Port Scanner (Common Services)", tool_32_port_scanner, "Network"),
-    33: ("Ping Latency & Packet Loss Analyzer", tool_33_ping_analyzer, "Network"),
-    34: ("DNS Jitter & Multi-Provider Benchmark", tool_34_dns_jitter, "Network"),
-    35: ("Network Interface Adapters & MAC Address Matrix", tool_35_net_adapters, "Network"),
-    36: ("Active TCP/UDP Connections Inspector (Netstat)", tool_36_active_conns, "Network"),
-    37: ("Default Gateway & Routing Table Checker", tool_37_gateway_route, "Network"),
-    38: ("Hostname to IP / Reverse DNS Lookup", tool_38_reverse_dns, "Network"),
-    39: ("Local Hostname Resolution & Hosts File Viewer", tool_39_hosts_file, "Network"),
-    40: ("WiFi Profile & Signal Inspector (netsh wlan)", tool_40_wifi_profiles, "Network"),
-
-    # Category 5: Web & Internet Intelligence
-    41: ("Public IP, Geolocation & ISP Telemetry", tool_41_public_ip, "Web"),
-    42: ("HTTP/HTTPS Header & Server Banner Grabber", tool_42_headers_grabber, "Web"),
-    43: ("Website SSL/TLS Certificate Expiration Checker", tool_43_ssl_cert, "Web"),
-    44: ("Website Response Time & Status Code Prober", tool_44_status_prober, "Web"),
-    45: ("Fast URL Downloader (CLI Wget style)", tool_45_url_downloader, "Web"),
-    46: ("Robots.txt & Sitemap Fetcher", tool_46_robots_fetcher, "Web"),
-    47: ("URL Expander (Follow Redirect Chains)", tool_47_redirect_chain, "Web"),
-    48: ("HTML Title & Meta Tags Extractor", tool_48_meta_extractor, "Web"),
-    49: ("Domain Whois & Registrar Probe", tool_49_domain_whois, "Web"),
-    50: ("Internet Connectivity Continuous Monitor", tool_50_connectivity_monitor, "Web"),
-
-    # Category 6: Cryptography, Hashes & Ciphers
-    51: ("Multi-Hash Calculator (MD5, SHA1, SHA256, SHA512)", tool_51_multi_hash, "Crypto"),
-    52: ("Hash Type Algorithmic Identifier", tool_52_hash_ident, "Crypto"),
-    53: ("Symmetric XOR Stream Cipher", tool_53_xor_cipher, "Crypto"),
-    54: ("Base16 (Hex), Base32 & Base64 Encoder/Decoder", tool_54_base_encoders, "Crypto"),
-    55: ("Caesar / ROT13 Substitution Cipher", tool_55_caesar_rot13, "Crypto"),
-    56: ("High-Entropy Password & Token Matrix", tool_56_password_matrix, "Crypto"),
-    57: ("Shannon Entropy Password Strength Grader", tool_57_shannon_entropy, "Crypto"),
-    58: ("HMAC SHA-256 Signature Generator", tool_58_hmac_generator, "Crypto"),
-    59: ("Secure Random Number / Dice Generator", tool_59_random_dice, "Crypto"),
-    60: ("UUID / GUID Generator (v4 Cryptographic)", tool_60_uuid_gen, "Crypto"),
-
-    # Category 7: Cybersecurity, Defense & Sanitization
-    61: ("DoD 5220.22-M 3-Pass Military File Shredder", tool_61_shredder, "Security"),
-    62: ("Free Space Zero-Fill Wiper (Anti-Forensics)", tool_62_zero_fill, "Security"),
-    63: ("Windows Clipboard Security Sanitizer", tool_63_clipboard_wipe, "Security"),
-    64: ("Windows Temp & Crash Dump Purger", tool_64_temp_purger, "Security"),
-    65: ("Browser Cache Cleaner Helper", tool_65_browser_cache, "Security"),
-    66: ("Suspicious Hidden File (.exe/.dll in AppData) Detector", tool_66_hidden_exe, "Security"),
-    67: ("USB Drive Autorun & Shortcut Virus Scanner", tool_67_usb_autorun, "Security"),
-    68: ("NTFS Alternate Data Stream (ADS) Detector", tool_68_ntfs_ads, "Security"),
-    69: ("Windows Firewall Status & Profile Inspector", tool_69_firewall_status, "Security"),
-    70: ("User Account Control (UAC) Elevation Level Checker", tool_70_uac_level, "Security"),
-
-    # Category 8: Binary Forensics & Reverse Engineering
-    71: ("Binary Hex Viewer (Hex Dump with ASCII column)", tool_71_hex_viewer, "Forensics"),
-    72: ("Magic Bytes / File Header Signature Identifier", tool_72_magic_bytes, "Forensics"),
-    73: ("ASCII & Unicode String Extractor", tool_73_string_extract, "Forensics"),
-    74: ("PE Executable Header & Section Analyzer", tool_74_pe_header, "Forensics"),
-    75: ("File Entropy Calculator (Packed / Encrypted Binary)", tool_75_file_entropy, "Forensics"),
-    76: ("Binary Difference Comparator (Byte-by-byte diff)", tool_76_binary_diff, "Forensics"),
-    77: ("Base64 Extractor from Binary Data", tool_77_base64_in_binary, "Forensics"),
-    78: ("IP / URL Regex Finder in Binary Files", tool_78_ip_regex_scanner, "Forensics"),
-    79: ("File Timestamp Forgery / Timestomp Detector", tool_79_timestomp_check, "Forensics"),
-    80: ("File MIME Type Guessing Engine", tool_80_mime_guess, "Forensics"),
-
-    # Category 9: Windows Administration & Registry
-    81: ("Windows Startup Items & Registry Run Keys", tool_81_startup_items, "Windows"),
-    82: ("Windows Services Inspector & Status Query", tool_82_services_status, "Windows"),
-    83: ("Windows Event Viewer Critical Errors Log", tool_83_event_errors, "Windows"),
-    84: ("Installed Software & Programs Inventory", tool_84_installed_apps, "Windows"),
-    85: ("Windows Defender Anti-Malware Engine Status", tool_85_defender_status, "Windows"),
-    86: ("DNS Cache Flush Utility (ipconfig /flushdns)", tool_86_flush_dns, "Windows"),
-    87: ("Task Scheduler Active Jobs Query", tool_87_task_scheduler, "Windows"),
-    88: ("Windows Product Key / Digital License Query", tool_88_product_key, "Windows"),
-    89: ("System File Integrity Checker (SFC helper)", tool_89_sfc_helper, "Windows"),
-    90: ("Windows Update Service State Inspector", tool_90_windows_update, "Windows"),
-
-    # Category 10: Productivity, Converters & Developer Utilities
-    91: ("Unix Epoch Timestamp Converter", tool_91_unix_epoch, "Dev"),
-    92: ("JSON Pretty Printer & Syntax Validator", tool_92_json_formatter, "Dev"),
-    93: ("XML / HTML Tag Stripper", tool_93_xml_formatter, "Dev"),
-    94: ("IP Subnet Mask & CIDR Calculator", tool_94_cidr_calc, "Dev"),
-    95: ("Number Base Converter (Bin, Oct, Dec, Hex)", tool_95_base_converter, "Dev"),
-    96: ("Text Word, Line & Character Counter", tool_96_word_counter, "Dev"),
-    97: ("Text Case Converter (camel, snake, kebab)", tool_97_case_converter, "Dev"),
-    98: ("Markdown to Plain Text Stripper", tool_98_markdown_strip, "Dev"),
-    99: ("Regex Pattern Matcher & Tester", tool_99_regex_tester, "Dev"),
-    100: ("Developer Scratchpad & Quick Note Vault", tool_100_scratch_vault, "Dev"),
-
-    # Category 11: National Network (Net Melli & Domestic Tools) [50 Tools: 101 - 150]
-    101: ("Tashkhise Vaziate Shabake (Net Melli vs Internet Beynolmelal)", tool_101_netmelli_checker, "NatNet"),
-    102: ("Massive DNS Benchmark (26 DNS: Shecan, 403, Electro, Radar)", tool_102_iran_dns_benchmark, "NatNet"),
-    103: ("Shekarchi Aloudegi va DNS Poisoning (Fake 10.10.34.34 Detector)", tool_103_dns_poison_detector, "NatNet"),
-    104: ("Massive VPN & Proxy Core Port Scanner (45+ Ports)", tool_104_proxy_health_check, "NatNet"),
-    105: ("Barresi Traffic Dakheli va Nim-Baha (Domestic IP Inspector)", tool_105_domestic_ip_inspector, "NatNet"),
-    106: ("Test Sor'at Download Server-haye Dakheli (CDN Speed Test)", tool_106_domestic_speed_test, "NatNet"),
-    107: ("Vaziate Dargah-haye Banki & Khedmate Zaroori (10+ Portal)", tool_107_banking_services_status, "NatNet"),
-    108: ("Ping Server-haye Gaming Dakheli va IXP Tehran", tool_108_ixp_gaming_latency, "NatNet"),
-    109: ("Tazrigh Record-haye Pak be File Hosts Windows (Bypass DNS)", tool_109_hosts_injector, "NatNet"),
-    110: ("Rahnama & Cheatsheet Net Melli & Mirror-haye Dakheli (PyPI, Ubuntu)", tool_110_emergency_cheatsheet, "NatNet"),
-    111: ("Cloudflare Clean Subnet Scanner (v2ray / Worker)", tool_111_cf_clean_subnet_scanner, "NatNet"),
-    112: ("TLS Handshake & Packet Drop Inspector", tool_112_tls_handshake_inspector, "NatNet"),
-    113: ("Tashkhis Dast-kari va Fake TCP RST (DPI Reset Detector)", tool_113_tcp_rst_detector, "NatNet"),
-    114: ("Peida kardan MTU Behyneh baraye Rad kardan Packet Drop", tool_114_mtu_optimizer, "NatNet"),
-    115: ("Moqayese DoH (DNS-over-HTTPS) ba Plain UDP DNS", tool_115_doh_vs_plain_dns, "NatNet"),
-    116: ("Benchmark Latency Proxy Local SOCKS5 (127.0.0.1:10808 / 7890)", tool_116_socks5_latency_bench, "NatNet"),
-    117: ("Test Sor'at Tunnel HTTP Proxy Local (127.0.0.1:10809 / 7890)", tool_117_http_proxy_speed_test, "NatNet"),
-    118: ("Shenasayi Operator va ASN Shabake Shoma", tool_118_operator_asn_detector, "NatNet"),
-    119: ("Barresi Routing Table va Split Tunneling", tool_119_routing_split_tunnel, "NatNet"),
-    120: ("Tanzim Khodkar DNS Shecan / 403 rooye Cart Shabake", tool_120_set_shecan_dns, "NatNet"),
-    121: ("Reset DNS be Halat Khodkar (DHCP Default)", tool_121_reset_dns_dhcp, "NatNet"),
-    122: ("Fa'alsazi System Proxy Windows (127.0.0.1:7890 / 10809)", tool_122_enable_system_proxy, "NatNet"),
-    123: ("Gheyre-fa'alsazi System Proxy Windows (Pak kardan Proxy)", tool_123_disable_system_proxy, "NatNet"),
-    124: ("Vaziate Dastresi be Portal-haye Daneshgahi va Sanjesh", tool_124_university_portals, "NatNet"),
-    125: ("Deep Latency Check Dargah-haye Pardakht Banki", tool_125_domestic_banking_deep, "NatNet"),
-    126: ("Barresi Etesal be Payam-Resanhaye Dakheli (Bale, Eitaa, Rubika)", tool_126_domestic_messaging_probe, "NatNet"),
-    127: ("Barresi Vaziate Filtering Payam-Resanhaye Jahani (Telegram, X)", tool_127_global_messaging_probe, "NatNet"),
-    128: ("Barresi Sor'at va Dastresi be VOD-haye Dakheli (Filimo, Namava)", tool_128_vod_streaming_check, "NatNet"),
-    129: ("Test Packet Loss va Stress Shabake Dakheli (20 Packet)", tool_129_domestic_packet_loss, "NatNet"),
-    130: ("Mirror-haye Dakheli Git & Repository", tool_130_git_domestic_mirrors, "NatNet"),
-    131: ("Test Bazresi SNI va DPI (Deep Packet Inspection)", tool_131_sni_dpi_inspector, "NatNet"),
-    132: ("Test Port-haye WebSocket va gRPC (v2ray protocol test)", tool_132_websocket_grpc_prober, "NatNet"),
-    133: ("Test Ekhtelal va Mahdoodiate UDP (UDP Choking Test)", tool_133_udp_choking_test, "NatNet"),
-    134: ("Hysteria / TUIC UDP Port Prober", tool_134_hysteria_tuic_prober, "NatNet"),
-    135: ("WireGuard Handshake Simulator", tool_135_wireguard_simulator, "NatNet"),
-    136: ("Hamgam-sazi Sa'at ba Server-haye NTP Dakheli", tool_136_iran_ntp_sync, "NatNet"),
-    137: ("Traceroute Hops ta Gateway-haye Marzi Keshvar", tool_137_traceroute_hops, "NatNet"),
-    138: ("Este'lam Range IP dar Database CRA (Nim-Baha)", tool_138_national_ip_database, "NatNet"),
-    139: ("DNS Leak & Gateway Tunnel Leak Detector", tool_139_dns_leak_checker, "NatNet"),
-    140: ("Reset Cart Shabake va Flush DNS Cache", tool_140_wlan_reset, "NatNet"),
-    141: ("Tanzim Khodkar Mirror Dakheli PyPI baraye Python", tool_141_pypi_mirror_config, "NatNet"),
-    142: ("Tanzim Khodkar Registry Dakheli NPM (Node.js)", tool_142_npm_mirror_config, "NatNet"),
-    143: ("Rahnama va Mirror-haye Dakheli Docker Hub", tool_143_docker_mirror_guide, "NatNet"),
-    144: ("Kholase Masir-dehi BGP va Peering IXP Tehran", tool_144_ixp_bgp_summary, "NatNet"),
-    145: ("Decoder Link Config-haye v2ray (vmess://, vless://)", tool_145_v2ray_config_decoder, "NatNet"),
-    146: ("Subscription Link Fetcher & Base64 Config Extractor", tool_146_sublink_fetcher, "NatNet"),
-    147: ("Ping va Sanjesh Clean IP-haye Cloudflare", tool_147_cf_clean_ip_pinger, "NatNet"),
-    148: ("Barresi Etesal be App Store-haye Irani", tool_148_iran_app_stores, "NatNet"),
-    149: ("Optimize Tanzimate TCP Windows baraye Bypass Packet Loss", tool_149_tcp_optimizer, "NatNet"),
-    150: ("Master Dashboard & Survival Guide Net Melli (50/50)", tool_150_emergency_dashboard, "NatNet")
-}
-
-CATEGORIES = [
-    ("System, OS & Kernel", 1, 10, "Core operating system inspection, uptime, PATH, hotfixes & kernel telemetry"),
-    ("CPU, Memory & Hardware Benchmarks", 11, 20, "Multi-core FLOPs, integer stress, RAM bandwidth, process monitor & hierarchy"),
-    ("Storage, Disk & File System Forensics", 21, 30, "Drive partitions, SHA-256 duplicate finder, folder space tree, archive extractor"),
-    ("Network Reconnaissance & Diagnostics", 31, 40, "Subnet ARP sweep, TCP port scanner, ping jitter, netstat, routing & Wi-Fi"),
-    ("Web & Internet Intelligence", 41, 50, "Public IP geolocation, HTTP header grabber, SSL cert analyzer, WHOIS & web monitor"),
-    ("Cryptography, Hashes & Ciphers", 51, 60, "Multi-hash generator, XOR cipher, Base encoders, Shannon entropy & HMAC signing"),
-    ("Cybersecurity, Defense & Sanitization", 61, 70, "DoD file shredder, free-space zero-wipe, clipboard sanitizer & ADS stream hunter"),
-    ("Binary Forensics & Reverse Engineering", 71, 80, "Hex viewer with ASCII dump, magic bytes, PE analyzer, file entropy & binary diff"),
-    ("Windows Administration & Registry", 81, 90, "Startup items, services manager, event log critical errors, Defender state & SFC"),
-    ("Productivity, Converters & Developer Utilities", 91, 100, "Epoch converter, JSON pretty printer, CIDR subnet mask, base converter & regex"),
-    ("National Network (Net Melli & Domestic Tools)", 101, 150, "50 specialized domestic tools: DNS benchmark, proxy prober, clean IPs & survival")
-]
 
 def pause():
     if sys.stdin.isatty():
@@ -270,7 +71,7 @@ def pause():
             print()
 
 def run_tool(num, interactive=True):
-    """Executes a tool by its numeric identifier (1-150) safely."""
+    """Executes a tool by its numeric identifier (1-625) safely."""
     if num in TOOLS:
         name, func, cat = TOOLS[num]
         print(f"\n{CLR_BOLD}{CLR_CYAN}>>> Executing [{num}] {name} ({cat}) <<<{CLR_RESET}")
@@ -299,54 +100,42 @@ def view_category(cat_idx):
     for tid in range(start_id, end_id + 1):
         name, _, _ = TOOLS[tid]
         print(f"  {CLR_CYAN}[{tid:<3}]{CLR_RESET} {name}")
-    print(f"\n  {CLR_GRAY}[0] Back to Main Menu{CLR_RESET}")
+    print()
     
-    try:
-        c = input(f"\n {CLR_YELLOW}Select Tool [{start_id}-{end_id}] or 0: {CLR_RESET}").strip()
-    except (KeyboardInterrupt, EOFError):
-        return
-
-    if c.isdigit():
-        num = int(c)
-        if start_id <= num <= end_id:
-            run_tool(num)
+    choice = input(f" {CLR_BOLD}Enter Tool Number to execute (or Enter to return): {CLR_RESET}").strip()
+    if choice.isdigit() and int(choice) in TOOLS:
+        run_tool(int(choice))
 
 def search_tools(query=None, interactive=True):
-    if query is None:
-        clear_screen()
-        print(BANNER)
-        try:
-            q = input(f" {CLR_YELLOW}Enter search keyword across all 150 tools: {CLR_RESET}").strip().lower()
-        except (KeyboardInterrupt, EOFError):
-            return
-    else:
-        q = query.strip().lower()
-
-    if not q:
-        return []
-    
+    if not query:
+        query = input(f"\n {CLR_BOLD}Enter search keyword (e.g. 'hash', 'dns', 'entropy'): {CLR_RESET}").strip()
+    if not query:
+        return
+        
+    q = query.lower()
     matches = []
-    for tid, (name, _, cat) in TOOLS.items():
+    for tid in sorted(TOOLS.keys()):
+        name, _, cat = TOOLS[tid]
         if q in name.lower() or q in cat.lower() or str(tid) == q:
             matches.append((tid, name, cat))
             
-    print(f"\n {CLR_GREEN}[✓] Discovered {len(matches)} matching tool(s) for '{q}':{CLR_RESET}\n")
-    for tid, name, cat in matches:
-        print(f"  {CLR_CYAN}[{tid:<3}]{CLR_RESET} {name:<56} {CLR_GRAY}({cat}){CLR_RESET}")
-        
+    print(f"\n {CLR_BOLD}Search Results for '{query}' ({len(matches)} matches found):{CLR_RESET}")
+    print(f" {CLR_GRAY}{'-'*70}{CLR_RESET}")
+    if not matches:
+        print(f"  {CLR_YELLOW}No tools matched your query.{CLR_RESET}")
+    else:
+        for tid, name, cat in matches:
+            print(f"  {CLR_CYAN}[{tid:<3}]{CLR_RESET} [{cat:<10}] {name}")
+            
     if interactive and matches:
-        try:
-            sel = input(f"\n {CLR_YELLOW}Enter Tool ID to execute (or Enter to cancel): {CLR_RESET}").strip()
-            if sel.isdigit() and int(sel) in TOOLS:
-                run_tool(int(sel))
-        except (KeyboardInterrupt, EOFError):
-            print()
-    return matches
+        sel = input(f"\n {CLR_BOLD}Enter Tool ID to execute (or Enter to cancel): {CLR_RESET}").strip()
+        if sel.isdigit() and int(sel) in TOOLS:
+            run_tool(int(sel))
 
 def display_all_tools():
     clear_screen()
     print(BANNER)
-    print(f" {CLR_BOLD}{CLR_PINK}>>> ALL 150 CIPHER TOOLS COMPLETE DIRECTORY <<<{CLR_RESET}\n")
+    print(f" {CLR_BOLD}{CLR_WHITE}COMPLETE CIPHER TOOLS TITAN DIRECTORY ({len(TOOLS)} TOOLS IN {len(CATEGORIES)} CATEGORIES){CLR_RESET}\n")
     for cat_idx, (cat_name, start_id, end_id, desc) in enumerate(CATEGORIES, 1):
         print(f" {CLR_BOLD}{CLR_YELLOW}[C{cat_idx}] {cat_name}{CLR_RESET} - {CLR_GRAY}{desc}{CLR_RESET}")
         for tid in range(start_id, end_id + 1):
@@ -379,9 +168,9 @@ def dump_tools_json():
     print(json.dumps(catalog, indent=2, ensure_ascii=False))
 
 def run_self_test():
-    """Automated self-diagnostic test suite verifying all 150 tools and modules."""
+    """Automated self-diagnostic test suite verifying all 625 tools and modules."""
     print(f"\n{CLR_BOLD}{CLR_CYAN}========================================================================{CLR_RESET}")
-    print(f"{CLR_BOLD}{CLR_YELLOW}       ⚡ CIPHER TOOLS - COMPREHENSIVE SELF-TEST ENGINE (150/150) ⚡{CLR_RESET}")
+    print(f"{CLR_BOLD}{CLR_YELLOW}       ⚡ CIPHER TOOLS - COMPREHENSIVE SELF-TEST ENGINE (625/625) ⚡{CLR_RESET}")
     print(f"{CLR_BOLD}{CLR_CYAN}========================================================================{CLR_RESET}\n")
     
     passed, warnings, failed = 0, 0, 0
@@ -389,10 +178,10 @@ def run_self_test():
     
     # Verify module registry integrity
     print(f" {CLR_BOLD}[*] Verifying tool registry integrity...{CLR_RESET}")
-    assert len(TOOLS) == 150, f"Expected 150 tools, found {len(TOOLS)}"
-    assert len(CATEGORIES) == 11, f"Expected 11 categories, found {len(CATEGORIES)}"
+    assert len(TOOLS) == 625, f"Expected 625 tools, found {len(TOOLS)}"
+    assert len(CATEGORIES) == 21, f"Expected 21 categories, found {len(CATEGORIES)}"
     
-    for tid in range(1, 151):
+    for tid in range(1, len(TOOLS) + 1):
         if tid not in TOOLS:
             failed += 1
             test_results.append((tid, "MISSING_REGISTRY", "Tool ID not found in TOOLS dict"))
@@ -406,7 +195,7 @@ def run_self_test():
             
         passed += 1
         
-    print(f" {CLR_GREEN}[✓] All 150 tools successfully registered and callable!{CLR_RESET}")
+    print(f" {CLR_GREEN}[✓] All {len(TOOLS)} tools successfully registered and callable!{CLR_RESET}")
     print(f" {CLR_GREEN}[✓] Passed: {passed} | Warnings: {warnings} | Failed: {failed}{CLR_RESET}\n")
     print(f"{CLR_BOLD}{CLR_GREEN}⚡ Self-Test Complete: 100% Registry & Execution Readiness Verified!{CLR_RESET}\n")
     return failed == 0
@@ -418,15 +207,28 @@ def interactive_loop():
     while True:
         clear_screen()
         print(BANNER)
-        print(f" {CLR_BOLD}{CLR_WHITE}TITAN CATEGORY DIRECTORY (150 TOTAL TOOLS):{CLR_RESET}")
-        for idx, (cat_name, s, e, _) in enumerate(CATEGORIES, 1):
-            print(f"  {CLR_CYAN}[C{idx:<2}]{CLR_RESET} {cat_name:<46} {CLR_GRAY}[Tools {s:02d}-{e:03d}]{CLR_RESET}")
+        print(f" {CLR_BOLD}{CLR_WHITE}TITAN CATEGORY DIRECTORY ({len(TOOLS)} TOTAL TOOLS ACROSS {len(CATEGORIES)} DISCIPLINES):{CLR_RESET}")
+        
+        # Display categories in clean two-column format
+        mid = (len(CATEGORIES) + 1) // 2
+        for i in range(mid):
+            c1_idx = i + 1
+            c1_name, c1_s, c1_e, _ = CATEGORIES[i]
+            col1 = f"{CLR_CYAN}[C{c1_idx:<2}]{CLR_RESET} {c1_name[:32]:<32} {CLR_GRAY}[{c1_s:03d}-{c1_e:03d}]{CLR_RESET}"
+            
+            if i + mid < len(CATEGORIES):
+                c2_idx = i + mid + 1
+                c2_name, c2_s, c2_e, _ = CATEGORIES[i + mid]
+                col2 = f"{CLR_CYAN}[C{c2_idx:<2}]{CLR_RESET} {c2_name[:32]:<32} {CLR_GRAY}[{c2_s:03d}-{c2_e:03d}]{CLR_RESET}"
+                print(f"  {col1}  │  {col2}")
+            else:
+                print(f"  {col1}")
             
         print(f"\n {CLR_BOLD}{CLR_WHITE}QUICK ACTIONS & COMMANDS:{CLR_RESET}")
-        print(f"  {CLR_PINK}[1-150]{CLR_RESET}  Direct Tool Launch (e.g. '41', '101', '1')")
-        print(f"  {CLR_PINK}[C1-C11]{CLR_RESET} Open Category Menu (e.g. 'c1', 'c11')")
-        print(f"  {CLR_PINK}[S]{CLR_RESET}      Search all 150 tools by keyword")
-        print(f"  {CLR_PINK}[A]{CLR_RESET}      Display full catalog of all 150 tools")
+        print(f"  {CLR_PINK}[1-{len(TOOLS)}]{CLR_RESET}  Direct Tool Launch (e.g. '41', '101', '151', '625')")
+        print(f"  {CLR_PINK}[C1-C{len(CATEGORIES)}]{CLR_RESET} Open Category Menu (e.g. 'c1', 'c11', 'c21')")
+        print(f"  {CLR_PINK}[S]{CLR_RESET}      Search all {len(TOOLS)} tools by keyword")
+        print(f"  {CLR_PINK}[A]{CLR_RESET}      Display full catalog of all {len(TOOLS)} tools")
         print(f"  {CLR_PINK}[T]{CLR_RESET}      Run automated self-test diagnostics")
         print(f"  {CLR_RED}[0/Q]{CLR_RESET}    Exit Cipher Tools\n")
 
@@ -463,20 +265,20 @@ def interactive_loop():
             elif 1 <= tnum <= len(CATEGORIES):
                 view_category(tnum - 1)
         else:
-            print(f" {CLR_RED}[-] Unknown command or tool ID: '{raw}'. Type 1-150, C1-C11, S to search, or Q to exit.{CLR_RESET}")
+            print(f" {CLR_RED}[-] Unknown command or tool ID: '{raw}'. Type 1-{len(TOOLS)}, C1-C{len(CATEGORIES)}, S to search, or Q to exit.{CLR_RESET}")
             pause()
 
 def main():
     parser = argparse.ArgumentParser(
-        description="⚡ Cipher Tools - Titan Suite (150 Precision Cybersecurity, Forensics & System Engineering Tools)",
+        description=f"⚡ Cipher Tools - Titan Suite ({len(TOOLS)} Precision Cybersecurity, Forensics & System Engineering Tools)",
         epilog="Examples:\n  python cipher_tools.py --tool 41\n  python cipher_tools.py --search dns\n  python cipher_tools.py --test\n  python cipher_tools.py --json",
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
-    parser.add_argument("-t", "--tool", type=int, help="Execute specific Tool ID directly (1 to 150)")
-    parser.add_argument("-c", "--category", help="View or run category by number (1-11 or C1-C11)")
-    parser.add_argument("-s", "--search", type=str, help="Search all 150 tools by keyword")
-    parser.add_argument("-l", "--list", action="store_true", help="Display all 150 tools and categories")
-    parser.add_argument("--json", action="store_true", help="Export full 150 tool registry in JSON format")
+    parser.add_argument("-t", "--tool", type=int, help=f"Execute specific Tool ID directly (1 to {len(TOOLS)})")
+    parser.add_argument("-c", "--category", help=f"View or run category by number (1-{len(CATEGORIES)} or C1-C{len(CATEGORIES)})")
+    parser.add_argument("-s", "--search", type=str, help=f"Search all {len(TOOLS)} tools by keyword")
+    parser.add_argument("-l", "--list", action="store_true", help=f"Display all {len(TOOLS)} tools and categories")
+    parser.add_argument("--json", action="store_true", help=f"Export full {len(TOOLS)} tool registry in JSON format")
     parser.add_argument("--test", action="store_true", help="Run comprehensive automated self-test diagnostics")
     parser.add_argument("--info", type=int, help="Show information about a specific tool ID")
     parser.add_argument("-v", "--version", action="version", version=f"Cipher Tools Titan Suite v{__version__}")
@@ -490,7 +292,7 @@ def main():
         if raw_cat.isdigit() and 1 <= int(raw_cat) <= len(CATEGORIES):
             view_category(int(raw_cat) - 1)
         else:
-            print(f"{CLR_RED}[-] Invalid category: {args.category}. Valid range: 1 to 11.{CLR_RESET}")
+            print(f"{CLR_RED}[-] Invalid category: {args.category}. Valid range: 1 to {len(CATEGORIES)}.{CLR_RESET}")
     elif args.search:
         search_tools(args.search, interactive=False)
     elif args.list:
