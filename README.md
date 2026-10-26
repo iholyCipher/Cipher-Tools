@@ -182,8 +182,13 @@
 ---
 
 ### 🚀 نحوه اجرای سوئیت:
-```powershell
-python C:\Users\TheCIpher\Desktop\Antigravity_Lab\cipher_tools.py
+```bash
+# کلون کردن مخزن
+git clone https://github.com/ithecipher/Cipher-Tools.git
+cd Cipher-Tools
+
+# اجرای مستقیم برنامه
+python cipher_tools.py
 ```
 - عدد هر ابزار (از **۱ تا ۱۵۰**) را مستقیم وارد کنید تا فوراً اجرا شود.
 - کلید **`S`** را بزنید تا بین تمامی ۱۵۰ ابزار جستجو کنید.
