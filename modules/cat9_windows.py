@@ -79,8 +79,8 @@ def tool_88_product_key():
     print(f"\n {CLR_BOLD}{CLR_YELLOW}=== [88] Windows Digital License Query ==={CLR_RESET}")
     if os.name == 'nt':
         try:
-            cmd = "(Get-CimInstance SoftwareLicensingProduct | Where-Object PartialProductKey | Select-Object -First 1).Name"
-            out = subprocess.check_output(["powershell", "-NoProfile", "-Command", cmd], text=True)
+            cmd = "(Get-CimInstance SoftwareLicensingProduct -Filter 'PartialProductKey is not null' -ErrorAction SilentlyContinue | Select-Object -First 1).Name"
+            out = subprocess.check_output(["powershell", "-NoProfile", "-Command", cmd], text=True, timeout=5)
             print(f"  License: {out.strip()}")
         except Exception as e: print(f"  Query error: {e}")
 

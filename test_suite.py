@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Cipher Tools - Titan Suite Automated Test & Quality Assurance Engine
-Runs and validates all 625 tools one by one with safe mocked inputs.
+Runs and validates all 1,250 tools one by one with safe mocked inputs.
 """
 
 import os
@@ -104,7 +104,7 @@ def run_all_tests(start_id=1, end_id=None):
 
     for tid in range(start_id, end_id + 1):
         name, func, cat = TOOLS[tid]
-        mock_inputs = iter(SAFE_MOCKS.get(tid, ["\n", "", "1", "no", "n", "."]))
+        mock_inputs = iter(SAFE_MOCKS.get(tid, ["", "1", "no", "n", "."]))
         
         # Intercept stdout so the test run is clean and concise
         captured_out = io.StringIO()

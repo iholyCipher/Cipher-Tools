@@ -76,10 +76,15 @@ def tool_454_file_splitter():
 
 def tool_455_file_touch():
     print(f"\n {CLR_BOLD}{CLR_YELLOW}=== [455] Touch Utility (Update File Modified Time) ==={CLR_RESET}")
-    path = input("  Enter file path: ").strip(' "\'') or "cipher_touch_test.tmp"
-    with open(path, 'a'): os.utime(path, None)
-    print(f"  {CLR_GREEN}[✓] File timestamp refreshed to current time.{CLR_RESET}")
-    if path == "cipher_touch_test.tmp": os.remove(path)
+    path = input("  Enter file path: ").strip().strip(' "') or "cipher_touch_test.tmp"
+    try:
+        with open(path, "a"):
+            os.utime(path, None)
+        print(f"  {CLR_GREEN}[✓] File timestamp refreshed to current time.{CLR_RESET}")
+        if path == "cipher_touch_test.tmp" and os.path.exists(path):
+            os.remove(path)
+    except Exception as e:
+        print(f"  {CLR_RED}[-] Touch error: {e}{CLR_RESET}")
 
 def tool_456_read_only_remover():
     print(f"\n {CLR_BOLD}{CLR_YELLOW}=== [456] Mass Read-Only File Flag Stripper ==={CLR_RESET}")

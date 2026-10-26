@@ -27,6 +27,6 @@ jobs:
         python cipher_tools.py --test
         python cipher_tools.py --search dns
         
-    - name: Run 625-Tool Automated Test Suite
+    - name: Run 1,250-Tool Automated Test Suite
       run: |
         python test_suite.py
