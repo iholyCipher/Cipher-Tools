@@ -36,6 +36,13 @@ keywords = [
     "pentest", "net-melli", "sysinternals", "dns-benchmark", "toolkit", "threat-intel"
 ]
 
+[project.urls]
+Homepage = "https://github.com/iholyCipher/Cipher-Tools"
+Documentation = "https://github.com/iholyCipher/Cipher-Tools#readme"
+Repository = "https://github.com/iholyCipher/Cipher-Tools.git"
+Issues = "https://github.com/iholyCipher/Cipher-Tools/issues"
+Changelog = "https://github.com/iholyCipher/Cipher-Tools/blob/main/CHANGELOG.md"
+
 [project.scripts]
 cipher-tools = "cipher_tools:main"
 

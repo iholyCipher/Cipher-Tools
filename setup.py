@@ -8,6 +8,7 @@ setup(
     version="1.0.0",
     description="Cipher Tools - Titan Suite (1,250 Precision Cybersecurity, Forensics & System Engineering Tools)",
     author="Cipher Engineering",
+    url="https://github.com/iholyCipher/Cipher-Tools",
     license="MIT",
     py_modules=["cipher_tools", "test_suite"],
     packages=find_packages(),

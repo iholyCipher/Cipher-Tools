@@ -12,7 +12,7 @@ Thank you for your interest in contributing to **Cipher Tools**! 🚀
 ## Development Setup
 
 ```bash
-git clone https://github.com/ithecipher/Cipher-Tools.git
+git clone https://github.com/iholyCipher/Cipher-Tools.git
 cd Cipher-Tools
 python cipher_tools.py --test
 ```
@@ -54,6 +54,6 @@ python test_suite.py --start 626 --end 1250
 
 ## Reporting Issues
 
-- Use the [GitHub Issues](https://github.com/ithecipher/Cipher-Tools/issues) tracker.
+- Use the [GitHub Issues](https://github.com/iholyCipher/Cipher-Tools/issues) tracker.
 - Include your Python version, OS, and the exact error output.
 - If a specific tool fails, include the tool ID number.
