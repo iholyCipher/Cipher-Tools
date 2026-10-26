@@ -7,6 +7,8 @@ import sys
 import re
 import math
 import mimetypes
+import struct
+import hashlib
 
 CLR_CYAN = "\033[96m"
 CLR_PINK = "\033[95m"
@@ -58,34 +60,110 @@ def tool_73_string_extract():
         print(f"  ➜ {m.decode('latin1', errors='ignore')}")
 
 def tool_74_pe_header():
-    print(f"\n {CLR_BOLD}{CLR_YELLOW}=== [74] Windows PE Executable Analyzer ==={CLR_RESET}")
-    p = input("  Enter .exe file: ").strip(' "\'')
-    if not os.path.isfile(p): return
+    print(f"\n {CLR_BOLD}{CLR_YELLOW}=== [74] Deep Windows PE Binary Architecture & Section Analyzer ==={CLR_RESET}")
+    p = input('  Enter PE executable file (.exe/.dll/.sys): ').strip(' "\'') or sys.executable
+    if not os.path.isfile(p):
+        print(f"  {CLR_RED}[-] File not found: {p}{CLR_RESET}")
+        return
     with open(p, 'rb') as f:
-        dos = f.read(64)
-        if not dos.startswith(b"MZ"):
-            print("  Not a Windows PE file.")
-            return
-        e_lfanew = int.from_bytes(dos[60:64], 'little')
-        f.seek(e_lfanew)
-        pe_sig = f.read(4)
-        if pe_sig == b"PE\x00\x00":
-            print(f"  {CLR_GREEN}[✓] Valid PE Header verified at offset 0x{e_lfanew:X}{CLR_RESET}")
+        data = f.read()
+    if len(data) < 64 or data[:2] != b"MZ":
+        print(f"  {CLR_RED}[-] Not a valid DOS/MZ executable binary.{CLR_RESET}")
+        return
+    e_lfanew = struct.unpack_from("<I", data, 0x3C)[0]
+    if e_lfanew + 24 > len(data) or data[e_lfanew:e_lfanew+4] != b"PE\x00\x00":
+        print(f"  {CLR_RED}[-] Missing NT PE\0\0 signature at offset 0x{e_lfanew:X}.{CLR_RESET}")
+        return
+    coff = e_lfanew + 4
+    machine, num_sections, timedate, sym_ptr, num_syms, opt_size, chars = struct.unpack_from("<HHIIIHH", data, coff)
+    opt_offset = coff + 20
+    magic = struct.unpack_from("<H", data, opt_offset)[0]
+    is_64 = (magic == 0x20B)
+    arch = "PE32+ (x64 Architecture)" if is_64 else "PE32 (x86 32-bit)"
+    
+    if is_64:
+        entry_point, image_base = struct.unpack_from("<IQ", data, opt_offset + 16)
+        subsystem = struct.unpack_from("<H", data, opt_offset + 68)[0]
+    else:
+        entry_point, image_base = struct.unpack_from("<II", data, opt_offset + 16)
+        subsystem = struct.unpack_from("<H", data, opt_offset + 68)[0]
+        
+    subsystem_names = {1: "Native Driver", 2: "Windows GUI", 3: "Windows CUI (Console)", 7: "POSIX", 9: "Windows CE", 10: "EFI Application"}
+    sub_desc = subsystem_names.get(subsystem, f"Subsystem {subsystem}")
+    
+    print(f"  Format Architecture: {CLR_CYAN}{arch}{CLR_RESET}")
+    print(f"  Entry Point (RVA)  : 0x{entry_point:08X} | Image Base: 0x{image_base:X}")
+    print(f"  Subsystem Type     : {sub_desc} | Sections Count: {num_sections}")
+    print(f"\n  {CLR_BOLD}PE Section Table & Permissions Breakdown:{CLR_RESET}")
+    print(f"  {'-'*65}")
+    print(f"  {'Section':<10} {'VirtAddr':<12} {'RawSize':<10} {'RawOffset':<12} {'Flags'}")
+    print(f"  {'-'*65}")
+    
+    sec_offset = opt_offset + opt_size
+    for _ in range(num_sections):
+        if sec_offset + 40 > len(data): break
+        s_data = data[sec_offset:sec_offset+40]
+        name = s_data[:8].rstrip(b"\x00").decode("ascii", errors="ignore")
+        v_size, v_addr, r_size, r_offset = struct.unpack_from("<IIII", s_data, 8)
+        c_flags = struct.unpack_from("<I", s_data, 36)[0]
+        perms = ("R" if (c_flags & 0x40000000) else "-") + \
+                ("W" if (c_flags & 0x80000000) else "-") + \
+                ("X" if (c_flags & 0x20000000) else "-")
+        print(f"  {name:<10} 0x{v_addr:08X}   {r_size:<10} 0x{r_offset:08X}   [{perms}]")
+        sec_offset += 40
+    print(f"  {CLR_GREEN}[✓] PE binary structural analysis completed successfully.{CLR_RESET}")
 
 def tool_75_file_entropy():
-    print(f"\n {CLR_BOLD}{CLR_YELLOW}=== [75] File Entropy Calculator (Packed / Encrypted Binary Detector) ==={CLR_RESET}")
-    p = input("  Enter file: ").strip(' "\'')
-    if not os.path.isfile(p): return
-    with open(p, 'rb') as f: data = f.read(1024 * 1024)
-    if not data: return
-    entropy = 0
-    for x in range(256):
-        p_x = float(data.count(x)) / len(data)
-        if p_x > 0: entropy += - p_x * math.log2(p_x)
-    print(f"  Entropy: {CLR_CYAN}{entropy:.3f} / 8.000 bits{CLR_RESET}")
-    if entropy > 7.2: print(f"  Status: {CLR_RED}Likely Encrypted, Compressed or Packed{CLR_RESET}")
-    elif entropy > 5.5: print(f"  Status: {CLR_YELLOW}Normal Code / Executable{CLR_RESET}")
-    else: print(f"  Status: {CLR_GREEN}Plaintext / Uncompressed Data{CLR_RESET}")
+    print(f"\n {CLR_BOLD}{CLR_YELLOW}=== [75] Sliding-Window Shannon Entropy Scanner & Density Map ==={CLR_RESET}")
+    p = input('  Enter binary file to scan: ').strip(' "\'') or sys.executable
+    if not os.path.isfile(p):
+        print(f"  {CLR_RED}[-] File not found: {p}{CLR_RESET}")
+        return
+    with open(p, 'rb') as f:
+        data = f.read(2 * 1024 * 1024)
+    if not data:
+        print("  File is empty.")
+        return
+        
+    l = len(data)
+    freq = {}
+    for b in data: freq[b] = freq.get(b, 0) + 1
+    total_entropy = -sum((c/l) * math.log2(c/l) for c in freq.values())
+    
+    print(f"  Total Binary Size  : {l:,} bytes")
+    print(f"  Mean Shannon Metric: {CLR_CYAN}{total_entropy:.4f} / 8.000 bits{CLR_RESET}")
+    
+    window = 512
+    step = 256
+    slices = []
+    offset = 0
+    while offset < l:
+        chunk = data[offset : offset + window]
+        if not chunk: break
+        cl = len(chunk)
+        cfreq = {}
+        for b in chunk: cfreq[b] = cfreq.get(b, 0) + 1
+        cent = -sum((c/cl) * math.log2(c/cl) for c in cfreq.values())
+        slices.append((offset, cent))
+        offset += step
+        
+    print(f"\n  {CLR_BOLD}Sliding Density Profile (sampled 16 blocks across binary):{CLR_RESET}")
+    print(f"  {'-'*65}")
+    stride = max(1, len(slices) // 16)
+    for off, ent in slices[::stride][:16]:
+        bar_len = int((ent / 8.0) * 16)
+        bar = "=" * bar_len + "." * (16 - bar_len)
+        if ent >= 7.2:
+            st = f"{CLR_RED}PACKED / ENCRYPTED{CLR_RESET}"
+        elif ent >= 5.5:
+            st = f"{CLR_YELLOW}EXECUTABLE CODE{CLR_RESET}"
+        elif ent >= 3.0:
+            st = f"{CLR_CYAN}STRUCTURED DATA{CLR_RESET}"
+        else:
+            st = f"{CLR_GRAY}SPARSE / ZERO-PADDED{CLR_RESET}"
+        print(f"  Offset 0x{off:06X} [{bar}] {ent:4.2f} bits | {st}")
+    print(f"  {'-'*65}")
+    print(f"  {CLR_GREEN}[✓] Sliding-window entropy profiling completed successfully.{CLR_RESET}")
 
 def tool_76_binary_diff():
     print(f"\n {CLR_BOLD}{CLR_YELLOW}=== [76] Binary Difference Comparator ==={CLR_RESET}")
