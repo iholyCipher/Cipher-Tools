@@ -119,10 +119,32 @@ def tool_610_netmelli_deep_summary():
     print(f"  {CLR_GREEN}[✓] Autonomous network telemetry and diagnostic battery validated.{CLR_RESET}")
 
 def tool_611_sni_fragmentation_simulator():
-    print(f"\n {CLR_BOLD}{CLR_YELLOW}=== [611] TLS ClientHello SNI Packet Fragmentation Simulator ==={CLR_RESET}")
-    print("  Technique: Split TCP payload containing TLS ClientHello across 2 TCP segments.")
-    print("  Bypasses naive Deep Packet Inspection (DPI) boxes that do not reassemble TCP streams.")
-    print(f"  {CLR_GREEN}[✓] SNI fragmentation logic configured.{CLR_RESET}")
+    print(f"\n {CLR_BOLD}{CLR_YELLOW}=== [611] Raw TLS 1.3 ClientHello Packet Dissector and SNI Fragmenter ==={CLR_RESET}")
+    import struct
+    domain = input('  Enter target domain for SNI [default "cloudflare.com"]: ').strip(' "\'') or "cloudflare.com"
+    server_name_bytes = domain.encode('ascii')
+    sni_ext = struct.pack(">HHH", 0x0000, len(server_name_bytes) + 5, len(server_name_bytes) + 3) + b"\x00" + struct.pack(">H", len(server_name_bytes)) + server_name_bytes
+    supp_vers = struct.pack(">HHB", 0x002B, 3, 2) + b"\x03\x04"
+    extensions = sni_ext + supp_vers
+    random_bytes = b"\x42" * 32
+    ciphers = struct.pack(">HHH", 4, 0x1301, 0x1303)
+    compression = b"\x01\x00"
+    ext_block = struct.pack(">H", len(extensions)) + extensions
+    client_hello_body = b"\x03\x03" + random_bytes + b"\x00" + ciphers + compression + ext_block
+    handshake_record = b"\x01" + struct.pack(">I", len(client_hello_body))[1:] + client_hello_body
+    tls_record = b"\x16\x03\x01" + struct.pack(">H", len(handshake_record)) + handshake_record
+    
+    sni_pos = tls_record.find(server_name_bytes)
+    frag_point = (sni_pos + max(1, len(server_name_bytes) // 2)) if sni_pos != -1 else (len(tls_record) // 2)
+    seg1, seg2 = tls_record[:frag_point], tls_record[frag_point:]
+    
+    print(f"  Target SNI Hostname : {CLR_CYAN}{domain}{CLR_RESET}")
+    print(f"  Total TLS Record    : {len(tls_record)} bytes (Record Type 0x16 Handshake)")
+    print(f"  SNI String Offset   : 0x{sni_pos:04X} ({sni_pos} bytes from start)")
+    print(f"  Optimal Split Point : Byte {frag_point} (splits hostname across TCP packets)")
+    print(f"  TCP Segment #1 Size : {len(seg1)} bytes | Ends with: 0x{seg1[-4:].hex()}")
+    print(f"  TCP Segment #2 Size : {len(seg2)} bytes | Starts with: 0x{seg2[:4].hex()}")
+    print(f"  {CLR_GREEN}[✓] DPI Evasion Fragment: Middle-box sees partial hostname in seg1 and rest in seg2.{CLR_RESET}")
 
 def tool_612_dns_over_tls_dot_prober():
     print(f"\n {CLR_BOLD}{CLR_YELLOW}=== [612] DNS-over-TLS (DoT Port 853) Connectivity Prober ==={CLR_RESET}")

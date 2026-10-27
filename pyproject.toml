@@ -8,7 +8,7 @@ version = "1.0.0"
 authors = [
   { name="Cipher Engineering", email="security@ciphertools.org" },
 ]
-description = "⚡ Cipher Tools - Titan Suite: 1,250 Precision Cybersecurity, Forensics, Networking & System Engineering Tools"
+description = "⚡ Cipher Tools - Titan Suite: 625 Precision Cybersecurity, Forensics, Networking & System Engineering Tools"
 readme = "README.md"
 requires-python = ">=3.8"
 license = { text = "MIT" }

@@ -1,6 +1,6 @@
 # ⚡ Cipher Tools v1.0.0
 # Designed with ZERO mandatory external pip dependencies.
-# All 1,250 tools run on pure Python standard library (3.8+).
+# All 625 tools run on pure Python standard library (3.8+).
 
 # Optional enhancements (not required):
 # colorama>=0.4.6; platform_system=="Windows"

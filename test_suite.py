@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Cipher Tools - Titan Suite Automated Test & Quality Assurance Engine
-Runs and validates all 1,250 tools one by one with safe mocked inputs.
+Runs and validates all 625 tools one by one with safe mocked inputs.
 """
 
 import os

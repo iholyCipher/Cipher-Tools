@@ -65,7 +65,7 @@ BANNER = rf"""{CLR_CYAN}
  ██║     ██║██╔═══╝ ██╔══██║██╔══╝  ██╔══██╗       ██║   ██║   ██║██║   ██║██║     ╚════██║
  ╚██████╗██║██║     ██║  ██║███████╗██║  ██║       ██║   ╚██████╔╝╚██████╔╝███████╗███████║
   ╚═════╝╚═╝╚═╝     ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝       ╚═╝    ╚═════╝  ╚═════╝ ╚══════╝╚══════╝
-{CLR_PINK}         >>> CIPHER TOOLS: TITAN SUITE v{__version__} (1,250 PRECISION POWER TOOLS) <<<{CLR_RESET}
+{CLR_PINK}         >>> CIPHER TOOLS: TITAN SUITE v{__version__} (625 PRECISION POWER TOOLS) <<<{CLR_RESET}
 """
 
 def pause():
@@ -173,9 +173,9 @@ def dump_tools_json():
     print(json.dumps(catalog, indent=2, ensure_ascii=False))
 
 def run_self_test():
-    """Automated self-diagnostic test suite verifying all 1,250 tools and modules."""
+    """Automated self-diagnostic test suite verifying all 625 tools and modules."""
     print(f"\n{CLR_BOLD}{CLR_CYAN}========================================================================{CLR_RESET}")
-    print(f"{CLR_BOLD}{CLR_YELLOW}      ⚡ CIPHER TOOLS - COMPREHENSIVE SELF-TEST ENGINE (1250/1250) ⚡{CLR_RESET}")
+    print(f"{CLR_BOLD}{CLR_YELLOW}       ⚡ CIPHER TOOLS - COMPREHENSIVE SELF-TEST ENGINE (625/625) ⚡{CLR_RESET}")
     print(f"{CLR_BOLD}{CLR_CYAN}========================================================================{CLR_RESET}\n")
     
     passed, warnings, failed = 0, 0, 0
@@ -183,8 +183,8 @@ def run_self_test():
     
     # Verify module registry integrity
     print(f" {CLR_BOLD}[*] Verifying tool registry integrity...{CLR_RESET}")
-    assert len(TOOLS) == 1250, f"Expected 1250 tools, found {len(TOOLS)}"
-    assert len(CATEGORIES) == 35, f"Expected 35 categories, found {len(CATEGORIES)}"
+    assert len(TOOLS) == 625, f"Expected 625 tools, found {len(TOOLS)}"
+    assert len(CATEGORIES) == 21, f"Expected 21 categories, found {len(CATEGORIES)}"
     
     for tid in range(1, len(TOOLS) + 1):
         if tid not in TOOLS:
@@ -219,19 +219,19 @@ def interactive_loop():
         for i in range(mid):
             c1_idx = i + 1
             c1_name, c1_s, c1_e, _ = CATEGORIES[i]
-            col1 = f"{CLR_CYAN}[C{c1_idx:<2}]{CLR_RESET} {c1_name[:28]:<28} {CLR_GRAY}[{c1_s:04d}-{c1_e:04d}]{CLR_RESET}"
+            col1 = f"{CLR_CYAN}[C{c1_idx:<2}]{CLR_RESET} {c1_name[:28]:<28} {CLR_GRAY}[{c1_s:03d}-{c1_e:03d}]{CLR_RESET}"
             
             if i + mid < len(CATEGORIES):
                 c2_idx = i + mid + 1
                 c2_name, c2_s, c2_e, _ = CATEGORIES[i + mid]
-                col2 = f"{CLR_CYAN}[C{c2_idx:<2}]{CLR_RESET} {c2_name[:28]:<28} {CLR_GRAY}[{c2_s:04d}-{c2_e:04d}]{CLR_RESET}"
+                col2 = f"{CLR_CYAN}[C{c2_idx:<2}]{CLR_RESET} {c2_name[:28]:<28} {CLR_GRAY}[{c2_s:03d}-{c2_e:03d}]{CLR_RESET}"
                 print(f"  {col1}  │  {col2}")
             else:
                 print(f"  {col1}")
             
         print(f"\n {CLR_BOLD}{CLR_WHITE}QUICK ACTIONS & COMMANDS:{CLR_RESET}")
-        print(f"  {CLR_PINK}[1-{len(TOOLS)}]{CLR_RESET}  Direct Tool Launch (e.g. '41', '101', '625', '1250')")
-        print(f"  {CLR_PINK}[C1-C{len(CATEGORIES)}]{CLR_RESET} Open Category Menu (e.g. 'c1', 'c21', 'c35')")
+        print(f"  {CLR_PINK}[1-{len(TOOLS)}]{CLR_RESET}  Direct Tool Launch (e.g. '41', '101', '352', '625')")
+        print(f"  {CLR_PINK}[C1-C{len(CATEGORIES)}]{CLR_RESET} Open Category Menu (e.g. 'c1', 'c11', 'c21')")
         print(f"  {CLR_PINK}[S]{CLR_RESET}      Search all {len(TOOLS)} tools by keyword")
         print(f"  {CLR_PINK}[A]{CLR_RESET}      Display full catalog of all {len(TOOLS)} tools")
         print(f"  {CLR_PINK}[T]{CLR_RESET}      Run automated self-test diagnostics")

@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 setup(
     name="cipher-tools",
     version="1.0.0",
-    description="Cipher Tools - Titan Suite (1,250 Precision Cybersecurity, Forensics & System Engineering Tools)",
+    description="Cipher Tools - Titan Suite (625 Precision Cybersecurity, Forensics & System Engineering Tools)",
     author="Cipher Engineering",
     url="https://github.com/iholyCipher/Cipher-Tools",
     license="MIT",

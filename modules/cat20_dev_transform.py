@@ -293,14 +293,106 @@ def tool_580_readme_badge_shield_builder():
     print(f"  Markdown Badge: {CLR_CYAN}{badge}{CLR_RESET}")
 
 def tool_581_python_ast_syntax_validator():
-    print(f"\n {CLR_BOLD}{CLR_YELLOW}=== [581] Python AST Syntax Validator ==={CLR_RESET}")
+    print(f"\n {CLR_BOLD}{CLR_YELLOW}=== [581] Python AST Static Security & Vulnerability Scanner (SAST) ==={CLR_RESET}")
     import ast
-    code = input("  Enter Python snippet (default 'x = [i**2 for i in range(10)]'): ").strip() or "x = [i**2 for i in range(10)]"
+    target = input('  Enter Python file path or snippet (default built-in test): ').strip(' "\'')
+    if target and os.path.isfile(target):
+        try:
+            with open(target, 'r', encoding='utf-8', errors='replace') as f:
+                code = f.read()
+            source_name = os.path.basename(target)
+        except Exception as e:
+            print(f"  {CLR_RED}[-] Could not read file: {e}{CLR_RESET}")
+            return
+    elif target and not os.path.isfile(target):
+        code = target
+        source_name = "User Snippet"
+    else:
+        code = """import os, subprocess, pickle, hashlib
+secret_token = "ghp_1234567890abcdef"
+cmd = input()
+os.system(cmd)
+subprocess.run("ls " + cmd, shell=True)
+eval("print(1)")
+data = pickle.loads(raw_data)
+h = hashlib.md5(b"test").hexdigest()
+"""
+        source_name = "Built-in Security Benchmark"
+
     try:
         tree = ast.parse(code)
-        print(f"  {CLR_GREEN}[✓] Valid Python Syntax! Parsed {len(tree.body)} AST node(s).{CLR_RESET}")
     except SyntaxError as e:
-        print(f"  {CLR_RED}[-] Syntax Error: {e}{CLR_RESET}")
+        print(f"  {CLR_RED}[-] Syntax Error in target code: {e}{CLR_RESET}")
+        return
+
+    findings = []
+
+    class SecurityVisitor(ast.NodeVisitor):
+        def visit_Call(self, node):
+            func_name = ""
+            if isinstance(node.func, ast.Name):
+                func_name = node.func.id
+            elif isinstance(node.func, ast.Attribute):
+                val_name = getattr(node.func.value, 'id', '')
+                func_name = f"{val_name}.{node.func.attr}" if val_name else node.func.attr
+
+            # 1. Dynamic execution
+            if func_name in ("eval", "exec", "__import__"):
+                findings.append((node.lineno, "CRITICAL", "CWE-95", f"Dynamic code execution via '{func_name}()'"))
+
+            # 2. Subprocess with shell=True or os.system / os.popen
+            if func_name in ("os.system", "os.popen"):
+                findings.append((node.lineno, "HIGH", "CWE-78", f"Insecure OS command execution via '{func_name}()'"))
+            elif "subprocess" in func_name:
+                for kw in node.keywords:
+                    if kw.arg == "shell" and isinstance(kw.value, ast.Constant) and kw.value.value is True:
+                        findings.append((node.lineno, "HIGH", "CWE-78", f"Subprocess spawned with 'shell=True'"))
+
+            # 3. Unsafe deserialization
+            if func_name in ("pickle.loads", "pickle.load", "_pickle.loads", "marshal.loads"):
+                findings.append((node.lineno, "HIGH", "CWE-502", f"Arbitrary object deserialization via '{func_name}()'"))
+            elif func_name in ("yaml.load",):
+                has_safe = any(kw.arg == "Loader" and "Safe" in getattr(kw.value, "id", "") for kw in node.keywords)
+                if not has_safe:
+                    findings.append((node.lineno, "MEDIUM", "CWE-502", "YAML loaded without SafeLoader"))
+
+            # 4. Weak cryptography
+            if func_name in ("hashlib.md5", "hashlib.sha1"):
+                findings.append((node.lineno, "LOW", "CWE-327", f"Weak cryptographic hash function '{func_name}()'"))
+
+            # 5. Insecure tempfile
+            if func_name in ("tempfile.mktemp",):
+                findings.append((node.lineno, "MEDIUM", "CWE-377", "Insecure temporary file creation via mktemp()"))
+
+            self.generic_visit(node)
+
+        def visit_Assign(self, node):
+            secret_pattern = ("password", "secret", "token", "api_key", "private_key")
+            for t in node.targets:
+                if isinstance(t, ast.Name):
+                    name_lower = t.id.lower()
+                    if any(sp in name_lower for sp in secret_pattern):
+                        if isinstance(node.value, ast.Constant) and isinstance(node.value.value, str) and len(node.value.value) > 4:
+                            findings.append((node.lineno, "HIGH", "CWE-798", f"Hardcoded credential/secret in variable '{t.id}'"))
+            self.generic_visit(node)
+
+    SecurityVisitor().visit(tree)
+
+    print(f"  Target Source      : {source_name}")
+    print(f"  Total AST Nodes    : {len(list(ast.walk(tree))):,}")
+    print(f"  Vulnerabilities    : {len(findings)} finding(s) detected\n")
+
+    if not findings:
+        print(f"  {CLR_GREEN}[✓] Clean Code: No high-risk security anti-patterns detected in AST.{CLR_RESET}")
+    else:
+        print(f"  {'-'*65}")
+        print(f"  {'Line':<6} {'Severity':<10} {'CWE':<10} {'Vulnerability Detail'}")
+        print(f"  {'-'*65}")
+        for lno, sev, cwe, det in findings:
+            clr = CLR_RED if sev in ("CRITICAL", "HIGH") else (CLR_YELLOW if sev == "MEDIUM" else CLR_CYAN)
+            print(f"  {lno:<6} {clr}{sev:<10}{CLR_RESET} {cwe:<10} {det}")
+        print(f"  {'-'*65}")
+        print(f"  {CLR_GREEN}[✓] AST SAST analysis complete.{CLR_RESET}")
 
 def tool_582_python_bytecode_disassembler():
     print(f"\n {CLR_BOLD}{CLR_YELLOW}=== [582] Python Disassembler (Bytecode Inspection) ==={CLR_RESET}")

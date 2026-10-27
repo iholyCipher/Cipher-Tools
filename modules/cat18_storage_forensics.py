@@ -407,9 +407,67 @@ def tool_489_zero_filled_block_scanner():
     print(f"  First 4KB Null Bytes: {nulls} ({nulls/len(data)*100:.1f}%)")
 
 def tool_490_raw_data_carver_jpeg():
-    print(f"\n {CLR_BOLD}{CLR_YELLOW}=== [490] Raw Storage JPEG Carver (FFD8 to FFD9) ==={CLR_RESET}")
-    print("  Carver target: JPEG Start of Image (0xFFD8) through End of Image (0xFFD9).")
-    print(f"  {CLR_GREEN}[✓] JPEG binary carving pattern initialized.{CLR_RESET}")
+    print(f"\n {CLR_BOLD}{CLR_YELLOW}=== [490] Deep Forensic JPEG Binary Carver & Marker Validator ==={CLR_RESET}")
+    p = input('  Enter raw file or disk image (default self-test buffer): ').strip(' "\'')
+    if p and os.path.isfile(p):
+        try:
+            with open(p, 'rb') as f: data = f.read(10 * 1024 * 1024)
+            src = os.path.basename(p)
+        except Exception as e:
+            print(f"  {CLR_RED}[-] File error: {e}{CLR_RESET}")
+            return
+    else:
+        # Synthetic raw stream with padding + valid minimal JFIF JPEG + trailing junk
+        jfif_header = b"\xFF\xD8\xFF\xE0\x00\x10JFIF\x00\x01\x01\x01\x00`\x00`\x00\x00"
+        dqt_marker = b"\xFF\xDB\x00\x43\x00" + (b"\x08" * 64)
+        sof_marker = b"\xFF\xC0\x00\x0B\x08\x00\x64\x00\x64\x01\x01\x11\x00"
+        sos_marker = b"\xFF\xDA\x00\x08\x01\x01\x00\x00\x3F\x00" + (b"\x12\x34" * 16)
+        eoi_marker = b"\xFF\xD9"
+        valid_jpeg = jfif_header + dqt_marker + sof_marker + sos_marker + eoi_marker
+        data = (b"\x00" * 256) + b"PAD_BEFORE" + valid_jpeg + b"JUNK_AFTER" + (b"\xFF" * 128)
+        src = "Synthetic Forensic Raw Stream"
+
+    print(f"  Scanning Source      : {src} ({len(data):,} bytes)")
+    carved = []
+    pos = 0
+    while True:
+        soi = data.find(b"\xFF\xD8\xFF", pos)
+        if soi == -1: break
+        
+        # Validate internal JPEG segment structure
+        idx = soi + 2
+        valid = False
+        while idx + 4 < len(data):
+            if data[idx] != 0xFF:
+                # Scan ahead for next marker or SOS entropy data
+                next_marker = data.find(b"\xFF", idx)
+                if next_marker == -1: break
+                idx = next_marker
+                continue
+
+            marker = data[idx+1]
+            if marker in (0xD9,):  # EOI
+                valid = True
+                eoi_offset = idx + 2
+                carved.append((soi, eoi_offset, eoi_offset - soi))
+                pos = eoi_offset
+                break
+            elif marker in (0x00, 0xD8, 0xD0, 0xD1, 0xD2, 0xD3, 0xD4, 0xD5, 0xD6, 0xD7):
+                idx += 2
+            else:
+                # Marker with 2-byte length
+                seg_len = int.from_bytes(data[idx+2:idx+4], "big")
+                idx += 2 + seg_len
+                
+        if not valid:
+            pos = soi + 2
+
+    if carved:
+        print(f"  {CLR_GREEN}[✓] Discovered {len(carved)} structurally validated JPEG image(s):{CLR_RESET}")
+        for i, (start, end, sz) in enumerate(carved, 1):
+            print(f"    #{i}: Offset 0x{start:06X} to 0x{end:06X} ({sz:,} bytes) [Header: SOI, Valid Segments, Trailer: EOI]")
+    else:
+        print(f"  {CLR_GRAY}No validated JPEG files discovered in byte stream.{CLR_RESET}")
 
 def tool_491_raw_data_carver_png():
     print(f"\n {CLR_BOLD}{CLR_YELLOW}=== [491] Raw Storage PNG Carver (89504E47 to IEND) ==={CLR_RESET}")
@@ -417,9 +475,46 @@ def tool_491_raw_data_carver_png():
     print(f"  {CLR_GREEN}[✓] PNG binary carving pattern initialized.{CLR_RESET}")
 
 def tool_492_raw_data_carver_pdf():
-    print(f"\n {CLR_BOLD}{CLR_YELLOW}=== [492] Raw Storage PDF Document Carver (%PDF- to %%EOF) ==={CLR_RESET}")
-    print("  Carver target: %PDF- header to %%EOF trailer.")
-    print(f"  {CLR_GREEN}[✓] PDF binary carving pattern initialized.{CLR_RESET}")
+    print(f"\n {CLR_BOLD}{CLR_YELLOW}=== [492] Deep PDF Document Carver and Cross-Reference Validator ==={CLR_RESET}")
+    p = input('  Enter raw file or disk image (default self-test buffer): ').strip(' "\'')
+    if p and os.path.isfile(p):
+        try:
+            with open(p, 'rb') as f: data = f.read(10 * 1024 * 1024)
+            src = os.path.basename(p)
+        except Exception as e:
+            print(f"  {CLR_RED}[-] File error: {e}{CLR_RESET}")
+            return
+    else:
+        valid_pdf = (b"%PDF-1.7\n"
+                     b"1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n"
+                     b"2 0 obj\n<< /Type /Pages /Kids [] /Count 0 >>\nendobj\n"
+                     b"xref\n0 3\n0000000000 65535 f \n0000000009 00000 n \n0000000058 00000 n \n"
+                     b"trailer\n<< /Size 3 /Root 1 0 R >>\nstartxref\n112\n%%EOF\n")
+        data = (b"\x00" * 128) + valid_pdf + (b"\x00" * 64)
+        src = "Synthetic Forensic Raw Stream"
+
+    print(f"  Scanning Source      : {src} ({len(data):,} bytes)")
+    import re
+    matches = []
+    for m in re.finditer(rb'%PDF-(\d\.\d)', data):
+        start = m.start()
+        ver = m.group(1).decode('ascii')
+        # Look for %%EOF trailer after start
+        eof_pos = data.find(b"%%EOF", start)
+        if eof_pos != -1:
+            end = eof_pos + 5
+            chunk = data[start:end]
+            has_obj = b"obj" in chunk and b"endobj" in chunk
+            has_root = b"/Catalog" in chunk or b"/Root" in chunk
+            matches.append((start, end, end - start, ver, has_obj, has_root))
+
+    if matches:
+        print(f"  {CLR_GREEN}[✓] Discovered {len(matches)} candidate PDF document stream(s):{CLR_RESET}")
+        for i, (s, e, sz, ver, h_obj, h_root) in enumerate(matches, 1):
+            struct_status = "Catalog and Objects Validated" if (h_obj and h_root) else "Partial/Fragmented PDF"
+            print(f"    #{i}: Offset 0x{s:06X}-0x{e:06X} ({sz:,} bytes) | PDF v{ver} | {struct_status}")
+    else:
+        print(f"  {CLR_GRAY}No PDF signatures found in stream.{CLR_RESET}")
 
 def tool_493_file_chunk_splitter():
     print(f"\n {CLR_BOLD}{CLR_YELLOW}=== [493] Forensic Disk Image Chunk Splitter ==={CLR_RESET}")

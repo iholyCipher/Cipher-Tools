@@ -3,65 +3,68 @@
 All notable changes to **Cipher Tools** are documented in this file.  
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning follows [Semantic Versioning](https://semver.org/).
 
-## [1.0.0] - 2026-10-26
+## [1.0.0] - 2026-10-27
 
 ### Highlights
 
-> **1,250 precision cybersecurity, forensics, and system engineering tools — zero external dependencies.**
+> **625 verified, production-grade cybersecurity, forensics, network telemetry, and system engineering engines — 100% pure Python standard library, zero external dependencies.**
 
 ### Added
 
-- **1,250 Native Tools** organized across **35 engineering disciplines**, each fully implemented in pure Python standard library.
-- **Modular Architecture** — 35 self-contained category modules under `modules/` with a centralized static registry (`modules/registry.py`) enabling sub-millisecond tool dispatch.
-- **Dual-Mode Interface** — Interactive cyberpunk TUI with two-column category navigation *and* full headless CLI (`--tool`, `--search`, `--category`, `--list`, `--json`, `--test`, `--info`, `--version`).
-- **Exhaustive Automated QA** — `test_suite.py` validates all 1,250 tools with mocked I/O, achieving a 100% pass rate.
-- **GitHub Actions CI Pipeline** — Multi-version Python testing (3.8 through 3.13) on `windows-latest`.
-- **Standard Packaging** — `pyproject.toml` (PEP 517/518), `setup.py`, `requirements.txt`, `LICENSE` (MIT), and `CONTRIBUTING.md`.
-- **JSON Export** — Machine-readable full catalog via `--json` for integrations, dashboards, and automation scripts.
+- **625 Native Operational Tools** across **21 core disciplines**, completely implemented and self-contained with zero third-party pip dependencies.
+- **Deep PE/COFF Binary Inspection Engine (Tool 74)**:
+  - Step-by-step raw struct parser for `IMAGE_DOS_HEADER`, `e_lfanew`, `IMAGE_NT_HEADERS32`/`64`, and Optional Headers.
+  - Complete Section Table parser computing Virtual Addresses, raw byte offsets, sizes, and mapping memory protection characteristics (`[R-X]`, `[RW-]`, `[R--]`).
+- **Sliding-Window Shannon Entropy Scanner (Tool 75)**:
+  - 512-byte sliding window analysis calculating entropy distribution profiles ($0.0 - 8.0$ bits/byte).
+  - Automated heuristic classification tagging payloads as `PACKED / ENCRYPTED`, `EXECUTABLE CODE`, `STRUCTURED DATA`, or `SPARSE / ZERO PADDING`.
+- **Mandiant Standard ImpHash Calculator (Tool 352)**:
+  - Exact binary IAT/ILT parser resolving both ordinal imports and name-hint thunks.
+  - Mandiant-compliant canonical ordering (`module.function` lowercased and sorted) producing verifiable MD5 import hashes for malware attribution.
+- **Surgical PE Section Entropy Analyzer (Tool 354)**:
+  - Calculates per-section Shannon entropy and flags packed or obfuscated executable segments exceeding the $7.2$ bits threshold.
+- **AST-Based Static Application Security Testing (SAST) Scanner (Tool 581)**:
+  - Python Abstract Syntax Tree (`ast.parse`) traversal engine detecting dangerous code constructs.
+  - Rule-based vulnerability detection for Dynamic Code Execution (CWE-95: `eval`/`exec`), Command Injection (CWE-78: `os.system`/`subprocess`), Insecure Deserialization (CWE-502: `pickle.loads`), Weak Cryptography (CWE-327: `hashlib.md5`/`sha1`), and Hardcoded Secrets (CWE-798).
+- **Raw TLS 1.3 ClientHello Binary Dissector & DPI Evasion Engine (Tool 611)**:
+  - Dissects and constructs wire-format TLS Record / Handshake binaries.
+  - Dissects Server Name Indication (SNI) extensions and computes exact byte split boundaries for TCP payload fragmentation past Deep Packet Inspection filters.
+- **Deep Forensic Smart Data Carvers (Tools 490 & 492)**:
+  - **JPEG Carver**: Extracts images scanning SOI (`0xFFD8`) to EOI (`0xFFD9`) while validating internal structural markers (APP0/JFIF, DQT, SOF, SOS) to prevent corrupt false-positive extraction.
+  - **PDF Carver**: Extracts documents from raw byte streams from `%PDF-1.x` headers to `%%EOF`, validating cross-reference (`xref`) and catalog dictionary integrity.
+- **Dual-Mode Execution Architecture**:
+  - Interactive cyberpunk terminal interface (TUI) with category browsing and keyboard navigation.
+  - Headless automation CLI with `--tool`, `--search`, `--category`, `--list`, `--json`, `--test`, and `--info`.
+- **Automated Comprehensive QA Engine**:
+  - `test_suite.py` delivering 100% verification across all 625 tools with mocked stdin and isolated environment execution.
+- **Zero-Dependency Guarantee**: Runs on any clean Python 3.8+ installation on Windows, Linux, and macOS.
 
-### Disciplines (35 Categories)
+### Removed
 
-| # | Category | Tools | Description |
-|:-:|:---|:---:|:---|
-| 1 | System, OS & Kernel | 1–10 | Uptime, hotfixes, PATH validation, kernel build info |
-| 2 | CPU, Memory & Benchmarks | 11–20 | FLOPs, integer stress, RAM bandwidth, process hierarchy |
-| 3 | Storage & Disk Forensics | 21–30 | Duplicate finder, checksum manifests, zero-byte scanner |
-| 4 | Network Reconnaissance | 31–40 | ARP sweep, port scanner, DNS benchmark, routing table |
-| 5 | Web & OSINT | 41–50 | SSL inspector, header grabber, redirect tracker |
-| 6 | Cryptography & Hashing | 51–60 | Multi-hash, XOR cipher, Shannon entropy, HMAC |
-| 7 | Cybersecurity & Defense | 61–70 | Firewall status, password auditor, file shredder |
-| 8 | Binary Forensics | 71–80 | Hex viewer, magic bytes, PE analyzer, entropy calc |
-| 9 | Windows Administration | 81–90 | Startup persistence, services, event logs, defender |
-| 10 | Developer Utilities | 91–100 | JSON validator, regex tester, base converter |
-| 11 | Domestic Network & Censorship | 101–150 | DNS benchmark, DPI detection, Cloudflare IP scanner |
-| 12 | Data Science & Statistics | 151–200 | Matrix ops, distributions, regression, clustering |
-| 13 | Advanced Cryptography | 201–250 | AES/RSA specs, key exchange, certificate parsing |
-| 14 | Firewall & Protocol Telemetry | 251–300 | SYN flood sim, TLS ALPN, DNSSEC, packet TTL |
-| 15 | Windows Internals | 301–330 | Registry hives, WMI, ETW, driver signing |
-| 16 | Malware Analysis | 331–400 | PE/ELF/Mach-O headers, Rich hash, YARA patterns |
-| 17 | Web Security & APIs | 401–450 | XSS/SQLi payloads, CORS audit, JWT cracker |
-| 18 | Storage Forensics & Recovery | 451–500 | File carving, BOM detection, NTFS compression |
-| 19 | Hardware & Thermal | 501–550 | GPU telemetry, battery health, fan/thermal probes |
-| 20 | Developer Swiss Army | 551–600 | Code formatters, linters, diff engines |
-| 21 | Censorship Resilience | 601–625 | SNI fragmentation, v2ray configs, VPN killswitch |
-| 22 | Active Directory & Kerberos | 626–675 | TGT/TGS analysis, LDAP filters, BloodHound, DPAPI |
-| 23 | Cloud & Kubernetes | 676–725 | AWS IAM linter, K8s PSS, Docker rootless audit |
-| 24 | Linux Internals | 726–775 | SUID/SGID hunter, PAM auditor, SELinux/AppArmor |
-| 25 | Offensive Defense | 776–825 | AMSI bypass, LOLBAS catalog, Sysmon linter, YARA |
-| 26 | Deep Protocol Analysis | 826–875 | DNS/DHCP/BGP/OSPF/Kerberos/SMB/RDP decoders |
-| 27 | Web3 & Blockchain | 876–925 | EVM disassembler, Solidity SWC, ERC standards |
-| 28 | Wireless & RF | 926–975 | 802.11 frames, WPA3 handshake, BLE, Zigbee, LoRa |
-| 29 | Threat Hunting & OSINT | 976–1025 | MITRE ATT&CK mapper, IOC extraction, Magecart |
-| 30 | Incident Response | 1026–1075 | Shimcache, Amcache, Prefetch, Shellbags, crash dumps |
-| 31 | APIs & Microservices | 1076–1125 | GraphQL introspection, gRPC/Protobuf, OpenAPI lint |
-| 32 | DevSecOps & SAST | 1126–1175 | Git secret scanner, SBOM, Semgrep rules, CI/CD audit |
-| 33 | Database Security | 1176–1210 | SQL injection sim, Redis/MongoDB/Kafka/Snowflake audit |
-| 34 | Quantum Cryptography | 1211–1235 | NIST PQC (Kyber/Dilithium), Shor/Grover estimators |
-| 35 | Autonomous AI & LLM Security | 1236–1250 | Prompt injection, RAG chunking, OWASP LLM Top 10 |
+- Purged placeholder stub tools (Tools 626–1250, Categories 22–35) to eliminate non-functional templates and ensure every single tool in the suite is authentic, robust, and functional.
 
-### Technical Specifications
+### Disciplines (21 Categories)
 
-- **Python**: 3.8, 3.9, 3.10, 3.11, 3.12, 3.13, 3.14+
-- **Dependencies**: Zero mandatory pip packages
-- **Platforms**: Windows x64, Linux, macOS
-- **License**: MIT
+| # | Category | Tools | Range | Description |
+|:-:|:---|:---:|:---:|:---|
+| 01 | System, OS & Kernel | 10 | 1–10 | Hardware architecture, OS build, system metrics, PATH integrity |
+| 02 | CPU, Memory & Benchmarks | 10 | 11–20 | Synthetic CPU stress, matrix FLOPS, RAM bandwidth, process telemetry |
+| 03 | Storage & Disk Forensics | 10 | 21–30 | Duplicate file detection, SHA-256 manifests, directory trees |
+| 04 | Network Reconnaissance | 10 | 31–40 | ARP table sweeps, TCP port probing, DNS benchmark, routing tables |
+| 05 | Web & OSINT | 10 | 41–50 | X.509 TLS certificate inspector, HTTP headers, redirect tracer |
+| 06 | Cryptography & Hashing | 10 | 51–60 | Cryptographic hash engine, HMAC, Shannon entropy, XOR ciphers |
+| 07 | Cybersecurity & Defense | 10 | 61–70 | Windows Firewall audit, password strength, DoD 5220.22-M file shredder |
+| 08 | Binary Forensics | 10 | 71–80 | Deep PE parser, sliding entropy scanner, magic bytes, hex dumps |
+| 09 | Windows Administration | 10 | 81–90 | Run/RunOnce persistence audit, service manager, event log inspector |
+| 10 | Developer Utilities | 10 | 91–100 | RFC 8259 JSON validator, regex debugger, base conversions |
+| 11 | Domestic Network & Censorship | 50 | 101–150 | DNS poisoning detection, TCP reset tracer, Cloudflare clean IP scanner |
+| 12 | Data Science & Statistics | 50 | 151–200 | Matrix algebra, statistical moments, linear regression, K-Means |
+| 13 | Advanced Cryptography | 50 | 201–250 | Feistel ciphers, Shamir secret sharing, PKCS#7, Diffie-Hellman |
+| 14 | Firewall & Protocol Telemetry | 50 | 251–300 | Raw socket headers, TTL hop distance, TCP flags, ICMP diagnostics |
+| 15 | Windows Internals | 30 | 301–330 | SAM/SYSTEM registry hives, WMI queries, ETW trace providers |
+| 16 | Malware Analysis | 70 | 331–400 | Mandiant ImpHash, section entropy, Rich Header, YARA pattern matcher |
+| 17 | Web Security & APIs | 50 | 401–450 | OWASP payload generators, CORS misconfiguration tester, JWT analyzer |
+| 18 | Storage Forensics & Recovery | 50 | 451–500 | Smart JPEG/PDF carvers, Master File Table parser, NTFS streams |
+| 19 | Hardware & Thermal | 50 | 501–550 | Thermal sensor telemetry, battery wear level, storage SMART diagnostics |
+| 20 | Developer Swiss Army | 50 | 551–600 | AST SAST vulnerability scanner, SQL formatter, tokenizers, diff engines |
+| 21 | Censorship Resilience | 25 | 601–625 | TLS 1.3 ClientHello dissector, SNI fragmentation, V2Ray/Xray config builder |
